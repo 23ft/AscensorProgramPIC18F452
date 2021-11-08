@@ -111,6 +111,10 @@ void boot(){
     TRISC = 0xFC;   // Registro TRISC definimos RC0-RC1 salidas, RC2-RC7 entradas.
 }
 
+void interruptsInit(){
+    RCONbits.IPEN = 0;
+}
+
 void bootAscensor(){
     UP_ASC = 1;
     DOWN_ASC = 1;
@@ -132,7 +136,7 @@ void bootAscensor(){
 
 void sort(int *p, int sizes){
     int temp, nums = 0, pos = 0, sizesMod = sizes;
-    int result[15];
+    static int result[] = {};       // cambiar a global y definir tamaño (100)
     
     // Por ser XC8 para espacios con RAM pequeña no es recomendable trabajar con espacios dinamicos, requeriria muchos recursos.
     //result = (int*)malloc(sizes*sizeof(int));
@@ -412,4 +416,13 @@ void main(void) {
     }
     
     return;
+}
+
+
+
+void __interrupt() ISR(){
+    
+    
+    
+    
 }
