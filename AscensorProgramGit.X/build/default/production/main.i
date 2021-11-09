@@ -7,8 +7,7 @@
 # 1 "/opt/microchip/mplabx/v5.50/packs/Microchip/PIC18Fxxxx_DFP/1.2.26/xc8/pic/include/language_support.h" 1 3
 # 2 "<built-in>" 2
 # 1 "main.c" 2
-
-
+# 21 "main.c"
 #pragma config OSC = HS
 #pragma config OSCS = OFF
 
@@ -3849,9 +3848,11 @@ extern __attribute__((nonreentrant)) void _delaywdt(unsigned long);
 #pragma intrinsic(_delay3)
 extern __attribute__((nonreentrant)) void _delay3(unsigned char);
 # 33 "/opt/microchip/mplabx/v5.50/packs/Microchip/PIC18Fxxxx_DFP/1.2.26/xc8/pic/include/xc.h" 2 3
-# 49 "main.c" 2
-# 91 "main.c"
-int calls, callsD, callFL, nowFL, queueUp[] = {}, queueDown[] = {}, callsInUp[100], numUps;
+# 67 "main.c" 2
+# 109 "main.c"
+int calls, callsD, callFL, nowFL, queueUp[100], queueDown[100], callsInUp[100], numUps;
+
+unsigned int upF = 0, downF = 0;
 
 
 
@@ -3864,9 +3865,11 @@ void callsUp();
 void modeDown();
 void sort(int *p, int sizes);
 
+void interruptsInit(void);
 
 
-void boot(){
+
+void boot() {
     ADCON1 = 0x06;
     TRISB = 0xFF;
     TRISD = 0xF0;
@@ -3874,21 +3877,22 @@ void boot(){
     TRISC = 0xFC;
 }
 
-void interruptsInit(){
+void interruptsInit(void) {
     RCONbits.IPEN = 0;
+    INTCONbits.GIE = 1;
+    INTCONbits.PEIE = 1;
 }
 
-void bootAscensor(){
+void bootAscensor() {
     LATCbits.LC0 = 1;
     LATCbits.LC1 = 1;
 
-    if (PORTDbits.RD4 == 1){
+    if (PORTDbits.RD4 == 1) {
         nowFL = 1;
         return;
-    }
-    else {
+    } else {
         LATCbits.LC0 = 0;
-        while(!PORTDbits.RD4){
+        while (!PORTDbits.RD4) {
             continue;
         }
         LATCbits.LC0 = 1;
@@ -3897,41 +3901,35 @@ void bootAscensor(){
     }
 }
 
-void sort(int *p, int sizes){
+void sort(int *p, int sizes) {
     int temp, nums = 0, pos = 0, sizesMod = sizes;
-    static int result[] = {};
+    static int result[100];
 
 
 
 
-    do
-    {
+    do {
         temp = *(p + 0);
 
-        for (int h = 0; h < sizesMod; h++)
-        {
+        for (int h = 0; h < sizesMod; h++) {
 
-            if (*(p + h) == temp)
-            {
+            if (*(p + h) == temp) {
                 temp = temp;
                 pos = h;
             }
-            if (*(p + h) > temp)
-            {
+            if (*(p + h) > temp) {
                 temp = temp;
                 pos = pos;
             }
 
-            if (*(p + h) < temp)
-            {
+            if (*(p + h) < temp) {
                 temp = *(p + h);
                 pos = h;
             }
         }
 
 
-        for (int k = pos; k < sizesMod; k++)
-        {
+        for (int k = pos; k < sizesMod; k++) {
             *(p + k) = *(p + (k + 1));
         }
         result[nums] = temp;
@@ -3940,59 +3938,54 @@ void sort(int *p, int sizes){
     } while (nums <= sizes - 1);
 
 
-    for (int j = 0; j < sizes; j++)
-    {
+    for (int j = 0; j < sizes; j++) {
         *(p + j) = result[j];
     }
 }
 
-void dataPanelUp(){
-        do{
-            if (PORTAbits.RA0) {
-                if (nowFL < 1){
-                    queueUp[calls] = 1;
-                    calls++;
-                }
-                else {
-                    queueDown[callsD] = 1;
-                    callsD++;
-                }
-
+void dataPanelUp() {
+    do {
+        if (PORTAbits.RA0) {
+            if (nowFL < 1) {
+                queueUp[calls] = 1;
+                calls++;
+            } else {
+                queueDown[callsD] = 1;
+                callsD++;
             }
-            if (PORTAbits.RA1) {
-                if (nowFL < 2){
-                    queueUp[calls] = 2;
-                    calls++;
-                }
-                else {
-                    queueDown[callsD] = 2;
-                    callsD++;
-                }
 
+        }
+        if (PORTAbits.RA1) {
+            if (nowFL < 2) {
+                queueUp[calls] = 2;
+                calls++;
+            } else {
+                queueDown[callsD] = 2;
+                callsD++;
             }
-            if (PORTAbits.RA2) {
-                if (nowFL < 3){
-                    queueUp[calls] = 3;
-                    calls++;
-                }
-                else {
-                    queueDown[callsD] = 3;
-                    callsD++;
-                }
 
+        }
+        if (PORTAbits.RA2) {
+            if (nowFL < 3) {
+                queueUp[calls] = 3;
+                calls++;
+            } else {
+                queueDown[callsD] = 3;
+                callsD++;
             }
-            if (PORTAbits.RA3) {
-                if (nowFL < 4){
-                    queueUp[calls] = 4;
-                    calls++;
-                }
-                else {
-                    queueDown[callsD] = 4;
-                    callsD++;
-                }
 
+        }
+        if (PORTAbits.RA3) {
+            if (nowFL < 4) {
+                queueUp[calls] = 4;
+                calls++;
+            } else {
+                queueDown[callsD] = 4;
+                callsD++;
             }
-        }while (!PORTAbits.RA4);
+
+        }
+    } while (!PORTAbits.RA4);
 
     int *UpCalls = &queueUp[0];
     int tamano = calls;
@@ -4001,58 +3994,24 @@ void dataPanelUp(){
 
 }
 
-void callsUp(){
-    switch(PORTB){
-            case 0x00:
-                LATD = 0x00;
-                break;
-
-            case 0x02:
-                callsInUp[numUps] = 2;
-                numUps++;
-                break;
-
-            case 0x04:
-
-                break;
-
-            case 0x08:
-                callsInUp[numUps] = 3;
-                numUps++;
-                break;
-
-            case 0x10:
-                LATD = 0x10;
-                break;
-
-            case 0x20:
-                LATD = 0x20;
-                break;
-
-            case 0x40:
-                LATD = 0x40;
-                break;
-
-    }
-}
-
-void modeUpControl(){
+void modeUpControl() {
 
     static int cont = 0;
 
-    switch(queueUp[cont]){
+    switch (queueUp[cont]) {
         case 1:
-            if(PORTDbits.RD4){
+            if (PORTDbits.RD4) {
 
                 LATCbits.LC1 = 1;
-                LATDbits.LD0 = 1;
-                nowFL = 1;
-
-                for (int i = 0; i < calls; i++){
+                for (int i = 0; i < calls; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 calls--;
+                LATDbits.LD0 = 1;
+                nowFL = 1;
+
                 dataPanelUp();
+
                 LATDbits.LD0 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
 
@@ -4061,13 +4020,13 @@ void modeUpControl(){
             break;
 
         case 2:
-            if(PORTDbits.RD5){
+            if (PORTDbits.RD5) {
 
                 LATCbits.LC1 = 1;
                 LATDbits.LD1 = 1;
                 nowFL = 2;
 
-                for (int i = 0; i < calls; i++){
+                for (int i = 0; i < calls; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 calls--;
@@ -4080,13 +4039,13 @@ void modeUpControl(){
             break;
 
         case 3:
-            if(PORTDbits.RD6){
+            if (PORTDbits.RD6) {
 
                 LATCbits.LC1 = 1;
                 LATDbits.LD2 = 1;
                 nowFL = 3;
 
-                for (int i = 0; i < calls; i++){
+                for (int i = 0; i < calls; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 calls--;
@@ -4099,13 +4058,13 @@ void modeUpControl(){
             break;
 
         case 4:
-            if(PORTDbits.RD7){
+            if (PORTDbits.RD7) {
 
                 LATCbits.LC1 = 1;
                 LATDbits.LD3 = 1;
                 nowFL = 4;
 
-                for (int i = 0; i < calls; i++){
+                for (int i = 0; i < calls; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 calls--;
@@ -4120,16 +4079,16 @@ void modeUpControl(){
 
 }
 
-void modeUp(){
-
+void modeUp() {
+    upF = 1;
     callsD = 0;
     calls = 0;
     numUps = 0;
 
-    switch(callFL){
+    switch (callFL) {
         case 1:
 
-            if (nowFL == 1){
+            if (nowFL == 1) {
                 LATDbits.LD0 = 1;
                 dataPanelUp();
                 LATDbits.LD0 = 0;
@@ -4138,18 +4097,16 @@ void modeUp(){
 
                 LATCbits.LC1 = 0;
 
-                while(1){
+                while (1) {
 
                     modeUpControl();
-                    callsUp();
 
                 }
 
-            }
-            else {
-                do{
+            } else {
+                do {
                     LATCbits.LC0 = 0;
-                }while(!PORTDbits.RD4);
+                } while (!PORTDbits.RD4);
                 LATCbits.LC0 = 1;
 
                 LATDbits.LD0 = 1;
@@ -4161,6 +4118,7 @@ void modeUp(){
 
 void main(void) {
     boot();
+    interruptsInit();
     bootAscensor();
 
     while (1) {
@@ -4183,9 +4141,39 @@ void main(void) {
 
 
 
-void __attribute__((picinterrupt(("")))) ISR(){
+void __attribute__((picinterrupt(("")))) ISR() {
+    switch (PORTB) {
+        case 0x00:
+            LATD = 0x00;
+            break;
 
+        case 0x02:
+            callsInUp[numUps] = 2;
+            numUps++;
+            break;
 
+        case 0x04:
 
+            break;
 
+        case 0x08:
+            callsInUp[numUps] = 3;
+            numUps++;
+            break;
+
+        case 0x10:
+            LATD = 0x10;
+            break;
+
+        case 0x20:
+            LATD = 0x20;
+            break;
+
+        case 0x40:
+            LATD = 0x40;
+            break;
+
+        case 0x80:
+            break;
+    }
 }

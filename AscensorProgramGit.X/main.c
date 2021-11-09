@@ -1,3 +1,21 @@
+/*
+Cambios pendientes [8 Nov]
+ checkxx* Manejo de llamadas a piso con interrupciones, utilizar structura switch para cada caso en PORTB.
+ * Flags de referencia para cada modo, para los botones de panel y llamadas a piso.
+ * Administar finalizacion modo subida llevando a cabo el inicio d emodo bajada, ordenando las llamadas a piso en la cola de llamadas de bajada. 
+ 
+ 
+ * Administrar llamadas a piso en el modo subida con el arreglo de modo subida, ordenarlo dependiendo de si cumple las espectativas de condiconamiento
+ * en la interrupciones tales como que el piso de llamada sea mayor al actual, caso no sera enviado al arreglo de modo bajada si es llamada a piso para 
+ * bajada. 
+
+ 
+*/
+
+
+
+
+
 // PIC18F452 Configuration Bit Settings
 // CONFIG1H
 #pragma config OSC = HS         // Oscillator Selection bits (HS oscillator)
@@ -88,7 +106,9 @@
 #define FLOOR3 3
 #define FLOOR4 4
 
-int calls, callsD, callFL, nowFL, queueUp[] = {}, queueDown[] = {}, callsInUp[100], numUps;
+int calls, callsD, callFL, nowFL, queueUp[100], queueDown[100], callsInUp[100], numUps;
+
+unsigned int upF = 0, downF = 0;    // flags.
 
 /* Prototypes functions */
 #define size(x, type) (sizeof(x) / sizeof(type))
@@ -101,294 +121,250 @@ void callsUp();                  // Funcion administrar llamadas en subida.
 void modeDown();                 // Funcion modo bajando.
 void sort(int *p, int sizes);    // Funcion ordenar array unidimensional, recibe puntero a arreglo y tamaño.
 
+void interruptsInit(void);       // Function to config interrupts, in this case use a interrupts unmasked (low and high priority interrupts is not used)
+
 
 /* Start Program */
-void boot(){
-    ADCON1 = 0x06;  // Registro ADCON1 para ADC, configuracion pines como I/O
-    TRISB = 0xFF;   // Registro TRISB definimos todos como entradas.
-    TRISD = 0xF0;   // RD0-RD3 (Outputs), RD4-RD7 (Inputs).   
-    TRISA = 0xFF;   // Registro TRISA definimos todas como salidas.
-    TRISC = 0xFC;   // Registro TRISC definimos RC0-RC1 salidas, RC2-RC7 entradas.
+void boot() {
+    ADCON1 = 0x06;          // Registro ADCON1 para ADC, configuracion pines como I/O
+    TRISB = 0xFF;           // Registro TRISB definimos todos como entradas.
+    TRISD = 0xF0;           // RD0-RD3 (Outputs), RD4-RD7 (Inputs).   
+    TRISA = 0xFF;           // Registro TRISA definimos todas como salidas.
+    TRISC = 0xFC;           // Registro TRISC definimos RC0-RC1 salidas, RC2-RC7 entradas.
 }
 
-void interruptsInit(){
-    RCONbits.IPEN = 0;
+void interruptsInit(void) {
+    RCONbits.IPEN = 0;      // Habilitiamos interrupciones sin mask.
+    INTCONbits.GIE = 1;     // Enabled unmasked interrupts (Global INterrupt Enabled Bit)
+    INTCONbits.PEIE = 1;    // Enabled peripheral interrups (Peripheral Interrupt Enabled bit)
 }
 
-void bootAscensor(){
+void bootAscensor() {
     UP_ASC = 1;
     DOWN_ASC = 1;
-    
-    if (SenFL1 == 1){
+
+    if (SenFL1 == 1) {
         nowFL = FLOOR1;
         return;
-    }
-    else {
+    } else {
         UP_ASC = 0;
-        while(!SenFL1){
+        while (!SenFL1) {
             continue;
         }
         UP_ASC = 1;
         nowFL = FLOOR1;
         return;
-    }    
+    }
 }
 
-void sort(int *p, int sizes){
+void sort(int *p, int sizes) {
     int temp, nums = 0, pos = 0, sizesMod = sizes;
-    static int result[] = {};       // cambiar a global y definir tamaño (100)
-    
+    static int result[100];                 // cambiar a global (en caso sea lento el proceso de ordenado en el pic) 
+
     // Por ser XC8 para espacios con RAM pequeña no es recomendable trabajar con espacios dinamicos, requeriria muchos recursos.
     //result = (int*)malloc(sizes*sizeof(int));
-      
-    do
-    {
+
+    do {
         temp = *(p + 0);
 
-        for (int h = 0; h < sizesMod; h++)
-        {
+        for (int h = 0; h < sizesMod; h++) {
 
-            if (*(p + h) == temp)
-            {
+            if (*(p + h) == temp) {
                 temp = temp;
                 pos = h;
             }
-            if (*(p + h) > temp)
-            {
+            if (*(p + h) > temp) {
                 temp = temp;
                 pos = pos;
             }
 
-            if (*(p + h) < temp)
-            {
+            if (*(p + h) < temp) {
                 temp = *(p + h);
                 pos = h;
             }
         }
-        
+
         /* This for function is desplaced the array and remove a element select in previus For's*/
-        for (int k = pos; k < sizesMod; k++)
-        {
+        for (int k = pos; k < sizesMod; k++) {
             *(p + k) = *(p + (k + 1));
         }
         result[nums] = temp;
-        sizesMod--;         // size of principal arry in iterations.
-        nums++;             // sentinel variable for carrier a nums listed in "result"
+        sizesMod--; // size of principal arry in iterations.
+        nums++; // sentinel variable for carrier a nums listed in "result"
     } while (nums <= sizes - 1);
 
     /* The for function is place a data in result in a arrary pointer */
-    for (int j = 0; j < sizes; j++)
-    {
+    for (int j = 0; j < sizes; j++) {
         *(p + j) = result[j];
     }
 }
 
-void dataPanelUp(){
-        do{
-            if (btnPn1) {
-                if (nowFL < FLOOR1){
-                    queueUp[calls] = FLOOR1;
-                    calls++;
-                }
-                else {
-                    queueDown[callsD] = FLOOR1;
-                    callsD++;
-                }
-                
+void dataPanelUp() {
+    do {
+        if (btnPn1) {
+            if (nowFL < FLOOR1) {
+                queueUp[calls] = FLOOR1;
+                calls++;
+            } else {
+                queueDown[callsD] = FLOOR1;
+                callsD++;
             }
-            if (btnPn2) {
-                if (nowFL < FLOOR2){
-                    queueUp[calls] = FLOOR2;
-                    calls++;
-                }
-                else {
-                    queueDown[callsD] = FLOOR2;
-                    callsD++;
-                }
-                
-            }   
-            if (btnPn3) {
-                if (nowFL < FLOOR3){
-                    queueUp[calls] = FLOOR3;
-                    calls++;
-                }
-                else {
-                    queueDown[callsD] = FLOOR3;
-                    callsD++;
-                }
-                
+
+        }
+        if (btnPn2) {
+            if (nowFL < FLOOR2) {
+                queueUp[calls] = FLOOR2;
+                calls++;
+            } else {
+                queueDown[callsD] = FLOOR2;
+                callsD++;
             }
-            if (btnPn4) {
-                if (nowFL < FLOOR4){
-                    queueUp[calls] = FLOOR4;
-                    calls++;
-                }
-                else {
-                    queueDown[callsD] = FLOOR4;
-                    callsD++;
-                }
-                
+
+        }
+        if (btnPn3) {
+            if (nowFL < FLOOR3) {
+                queueUp[calls] = FLOOR3;
+                calls++;
+            } else {
+                queueDown[callsD] = FLOOR3;
+                callsD++;
             }
-        }while (!btnPnCD);
-    
+
+        }
+        if (btnPn4) {
+            if (nowFL < FLOOR4) {
+                queueUp[calls] = FLOOR4;
+                calls++;
+            } else {
+                queueDown[callsD] = FLOOR4;
+                callsD++;
+            }
+
+        }
+    } while (!btnPnCD);
+
     int *UpCalls = &queueUp[0];
     int tamano = calls;
-    
+
     sort(UpCalls, tamano);
-    
+
 }
 
-void callsUp(){
-    switch(PORTB){
-            case 0x00:  // buttons stop press
-                LATD = 0x00;
-                break;
-                
-            case 0x02: // button Up2 press 0x02 is 2 in decimal. 
-                callsInUp[numUps] = FLOOR2;
-                numUps++;
-                break;
-                
-            case 0x04: // button Down2 press 0x04 is 4 in decimal.
-                                        
-                break;
-                
-            case 0x08: // button Up3 press 0x08 is 8 in decimal.
-                callsInUp[numUps] = FLOOR3;
-                numUps++;
-                break;                
-                
-            case 0x10:  // button Down3
-                LATD = 0x10;
-                break;                
-                
-            case 0x20:  // button down4
-                LATD = 0x20;
-                break;                            
-                
-            case 0x40:  // button up1
-                LATD = 0x40;
-                break;                                
+void modeUpControl() {
 
-    }
-}
-
-void modeUpControl(){
-    
     static int cont = 0;
-    
-    switch(queueUp[cont]){
+
+    switch (queueUp[cont]) {
         case FLOOR1:
-            if(SenFL1){
+            if (SenFL1) {
                 // STOP in floor1
                 DOWN_ASC = 1;
-                DOOR1 = 1;
-                nowFL = FLOOR1;
-
-                for (int i = 0; i < calls; i++){
+                for (int i = 0; i < calls; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 calls--;
+                DOOR1 = 1;
+                nowFL = FLOOR1;
+                
                 dataPanelUp();
+                
                 DOOR1 = 0;
                 __delay_ms(300);
-                
+
                 DOWN_ASC = 0;
             }
             break;
-            
+
         case FLOOR2:
-            if(SenFL2){
+            if (SenFL2) {
                 // STOP in floor2
                 DOWN_ASC = 1;
                 DOOR2 = 1;
                 nowFL = FLOOR2;
 
-                for (int i = 0; i < calls; i++){
+                for (int i = 0; i < calls; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 calls--;
                 dataPanelUp();
                 DOOR2 = 0;
                 __delay_ms(300);
-                
+
                 DOWN_ASC = 0;
             }
             break;
-            
+
         case FLOOR3:
-            if(SenFL3){
+            if (SenFL3) {
                 // STOP in floor3
                 DOWN_ASC = 1;
                 DOOR3 = 1;
                 nowFL = FLOOR3;
 
-                for (int i = 0; i < calls; i++){
+                for (int i = 0; i < calls; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 calls--;
                 dataPanelUp();
                 DOOR3 = 0;
                 __delay_ms(300);
-                
+
                 DOWN_ASC = 0;
             }
             break;
-            
+
         case FLOOR4:
-            if(SenFL4){
+            if (SenFL4) {
                 // STOP in floor4
                 DOWN_ASC = 1;
                 DOOR4 = 1;
                 nowFL = FLOOR4;
 
-                for (int i = 0; i < calls; i++){
+                for (int i = 0; i < calls; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 calls--;
                 dataPanelUp();
                 DOOR4 = 0;
                 __delay_ms(300);
-                
+
                 DOWN_ASC = 0;
             }
             break;
     }
-    
+
 }
 
-void modeUp(){
-    
+void modeUp() {
+    upF = 1;        // Set flag mode up.
     callsD = 0;
     calls = 0;
     numUps = 0;
-    
-    switch(callFL){
+
+    switch (callFL) {
         case 1:
-            
-            if (nowFL == FLOOR1){
+
+            if (nowFL == FLOOR1) {
                 DOOR1 = 1;
                 dataPanelUp();
                 DOOR1 = 0;
                 __delay_ms(300);
-                
+
                 /* Modo subida inicando! */
                 DOWN_ASC = 0;
-                
-                while(1){
-                    
+
+                while (1) {
+
                     modeUpControl();
-                    callsUp(); // pensando en sacar de aca.
                     
                 }
-                
-            }
-            else {
-                do{
+
+            } else {
+                do {
                     UP_ASC = 0;
-                }while(!SenFL1);
+                } while (!SenFL1);
                 UP_ASC = 1;
-                
+
                 DOOR1 = 1;
                 dataPanelUp();
                 DOOR1 = 0;
@@ -398,31 +374,62 @@ void modeUp(){
 
 void main(void) {
     boot();
+    interruptsInit();
     bootAscensor();
     
-    while (1) {       
+    while (1) {
         if (btnUpFL1) {
             callFL = FLOOR1;
             modeUp();
-        }    
+        }
         else if (btnUpFL2) {
             callFL = FLOOR2;
             modeUp();
-        }
+        } 
         else if (btnUpFL3) {
             callFL = FLOOR3;
             modeUp();
-        }    
+        }
     }
-    
+
     return;
 }
+        
 
+//I use a intrrupts in INT0-INT1-INT2 and changes in portb with RB port change interrupt.
+void __interrupt() ISR() {
+    switch (PORTB) {
+        case 0x00: // (RB0) Button up 1 is press.
+            LATD = 0x00;
+            break;
 
+        case 0x02: // (RB1) button Up2 press 0x02 is 2 in decimal. 
+            callsInUp[numUps] = FLOOR2;
+            numUps++;
+            break;
 
-void __interrupt() ISR(){
-    
-    
-    
-    
+        case 0x04: // (RB2) button Down2 press 0x04 is 4 in decimal.
+            
+            break;
+
+        case 0x08: // (RB3) not use.
+            callsInUp[numUps] = FLOOR3;
+            numUps++;
+            break;
+
+        case 0x10: // (RB4) button Up3 press 0x08 is 8 in decimal.
+            LATD = 0x10;
+            break;
+
+        case 0x20: // (RB5) button Down3
+            LATD = 0x20;
+            break;
+
+        case 0x40: // (RB6)button down4
+            LATD = 0x40;
+            break;
+            
+        case 0x80: // (RB7) PNL_BTN_STP
+            break;
+    }
 }
