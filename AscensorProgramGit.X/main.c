@@ -1,29 +1,25 @@
 /*
-Cambios pendientes [8 Nov]
+Cambios pendientes [11 Nov]
  checkxx* Manejo de llamadas a piso con interrupciones, utilizar structura switch para cada caso en PORTB.
- * Flags de referencia para cada modo, para los botones de panel y llamadas a piso.
- * Administar finalizacion modo subida llevando a cabo el inicio d emodo bajada, ordenando las llamadas a piso en la cola de llamadas de bajada. 
+ checkxx* Flags de referencia para cada modo, para los botones de panel y llamadas a piso.
+ checkxxx* Administar finalizacion modo subida llevando a cabo el inicio d emodo bajada, ordenando las llamadas a piso en la cola de llamadas de bajada. 
  
- 
- * Administrar llamadas a piso en el modo subida con el arreglo de modo subida, ordenarlo dependiendo de si cumple las espectativas de condiconamiento
- * en la interrupciones tales como que el piso de llamada sea mayor al actual, caso no sera enviado al arreglo de modo bajada si es llamada a piso para 
- * bajada. 
+ * Cambiar ordenamiento a al reves cuando cambies de modo. (line 479)
+ * Terminar else de cada piso en modoUp
+ * Prueba iniciar en funcion con bucle, saltar a otra con bucle y volver a la inicial. (prueba para comprender si es verdad la idea de que el codigo va y lo busca a la memoria)
 
  
 */
 
 /*
- 
- [Pruebas pendietes]
+  [Pruebas pendietes]
  * Hardware sistema de puertas y prueba de software.
  * Prueba de inicializacion ascensor para determinar pines UP_ASC y DOWN_ASC
  * Prueba interrupciones en hardware con todos los botones de piso.
+ * Prueba ordenamiento arreglos.
  
  
  */
-
-
-
 
 // PIC18F452 Configuration Bit Settings
 // CONFIG1H
@@ -115,9 +111,9 @@ Cambios pendientes [8 Nov]
 #define FLOOR3 3
 #define FLOOR4 4
 
-int tasksDown, tasksUp, calls, callsD, callFL, nowFL, queueUp[100], queueDown[100], callsInUp[100];
-
-unsigned int *UpTasks = %queueUp[0];        
+int tasksDown, tasksUp, calls, callsD, callFL_up, callFL_down, nowFL, queueUp[100], queueDown[100], callsInUp[100];
+ 
+int *UpTasks, (*func_norepeat)();         
 unsigned int modeUp_F, modeDown_F, btn1_f, btn2_f, btn3_f, btn4_f, btnCD_f, btnOD_f;    
 unsigned int up1_f, up2_f, down2_f, up3_f, down3_f, down4_f;
      
@@ -149,28 +145,28 @@ void boot() {
     tasksUp = 0;         // Number tasks for mode up     
     calls = 0;           // Calls floors in mode up.
     callsD = 0;          // Calls floors in mode Down.
-    callFL = 0;          // Piso de la ultima llamada.
+    callFL_up = 0;          // Piso de la ultima llamada.
     nowFL = 0;           // Last floor stoped.
     
     /* Flags */
     modeUp_F = 0;       // Mode up flag
     modeDown_F = 0;     // Mode down flag
     
-    btn1_f = 0;         // btn1 panel flag
-    btn2_f = 0;         // btn2 panel flag
-    btn3_f = 0;         // btn3 panel flag
-    btn4_f = 0;         // btn4 panel flag
-    btnCD_f = 0;        // btn CloseDoor panel flag
-    btnOD_f = 0;        // btn OpenDoor panel flag
+    //btn1_f = 0;         // btn1 panel flag
+    //btn2_f = 0;         // btn2 panel flag
+    //btn3_f = 0;         // btn3 panel flag
+    //btn4_f = 0;         // btn4 panel flag
+    //btnCD_f = 0;        // btn CloseDoor panel flag
+    //btnOD_f = 0;        // btn OpenDoor panel flag
         
-    up1_f = 0;          // btn floor 1 up.
-    up2_f = 0;          // btn floor 2 up.    
-    down2_f = 0;        // btn floor 2 down.
-    up3_f = 0;          // btn floor 3 up.
-    down3_f = 0;        // btn floor 3 down.
-    down4_f  = 0;       // btn floor 4 down.
+    //up1_f = 0;          // btn floor 1 up.
+    //up2_f = 0;          // btn floor 2 up.    
+    //down2_f = 0;        // btn floor 2 down.
+    //up3_f = 0;          // btn floor 3 up.
+    //down3_f = 0;        // btn floor 3 down.
+    //down4_f  = 0;       // btn floor 4 down.
 
-    UpTasks;            // Pointer to array of task in mode up.
+    UpTasks = &queueUp[0];            // Pointer to array of task in mode up.
 }
 
 void interruptsInit(void) {
@@ -197,9 +193,40 @@ void bootAscensor() {
     }
 }
 
+int noRepeat(int *po, int sixes){
+    int size = sixes;
+    /*
+
+        *temp es la posicion para el elemento de comparacion.
+        *comp es la posicion para el elemento a comparar.
+        *shift es la variable de la posicion para el corrimiento.
+    */
+
+    for (int temp = 0; temp < size; temp++){                        // (For seleccion) para seleccionar el 'elemento de comparacion' del array.
+            
+        for(int comp = temp + 1; comp < size; comp++){              // (For comparacion) para comparar ese elemento con todos los demas.
+            
+            if (*(po + temp) == *(po + comp)){     // Determinamos si el 'elemento de comparacion' es igual al 'elemento comparado'. 
+                int t = comp;
+
+                for (int shift = comp; shift < size; shift++){      // (For corrimiento) corremos el arreglo para sacar el dato repetido.
+                    *(po + t) = *(po + (shift + 1));
+                    t++;
+                }
+                size--;
+                comp--;                         // Mantengo mi posicion en el "for de comparacion" suponiendo que se corrio el arreglo una casilla.
+                                                                           
+            } 
+        
+        }
+    }
+    return size;
+
+}
+
 void sort(int *p, int sizes) {
     int temp, nums = 0, pos = 0, sizesMod = sizes;
-    static int result[100];                 // cambiar a global (en caso sea lento el proceso de ordenado en el pic) 
+    int result[100];                 // cambiar a global (en caso sea lento el proceso de ordenado en el pic) 
 
     // Por ser XC8 para espacios con RAM pequeña no es recomendable trabajar con espacios dinamicos, requeriria muchos recursos.
     //result = (int*)malloc(sizes*sizeof(int));
@@ -239,75 +266,61 @@ void sort(int *p, int sizes) {
     }
 }
 
+/* Pensar en volver global para modo subida y bajada */
 void dataPanelUp() {
     do {
         if (btnPn1) {
-            
-            if (!btn1_f){
+                       
                 if (nowFL < FLOOR1) {
                     queueUp[tasksUp] = FLOOR1;
                     tasksUp++;
-                    btn1_f = 1;            // set flag to btn1 in panel.
                 } else {
                     queueDown[tasksDown] = FLOOR1;
-                    callsD++;
-                    btn1_f = 1;
+                    tasksDown++;
                 }
-            }
-            
+                        
         }
         if (btnPn2) {
-            if (!btn2_f){
-
+            
                 if (nowFL < FLOOR2) {
                     queueUp[tasksUp] = FLOOR2;
                     tasksUp++;
-                    btn2_f = 1;             // set flag to btn2 in panel.
+                /* Ver esto como llamada a piso */
                 } else {
-                    queueDown[tasksDown] = FLOOR2;
-                    callsD++;
-                    btn2_f = 1;
+                    queueDown[tasksDown] = FLOOR2; // cambiar 
+                    tasksDown++;
                 }
-
-            }
+           
         }
         if (btnPn3) {
-            if (!btn3_f){
 
                 if (nowFL < FLOOR3) {
                     queueUp[tasksUp] = FLOOR3;
                     tasksUp++;
-                    btn3_f = 1;
                 } else {
                     queueDown[tasksDown] = FLOOR3;
-                    callsD++;
-                    btn3_f = 1;
+                    tasksDown++;
 
                 }
-            }
 
         }
         if (btnPn4) {
-            if (!btn4_f){
 
                 if (nowFL < FLOOR4) {
                     queueUp[tasksUp] = FLOOR4;
                     tasksUp++;
-                    btn4_f = 1;
                 } else {
                     queueDown[tasksDown] = FLOOR4;
-                    callsD++;
-                    btn4_f = 1;
+                    tasksDown++;
 
                 }
-            }
         }
-    } while (!btnPnCD);
-
-    
-  
-
-    sort(UpCalls, tasksUp);
+    } while (!btnPnCD);   
+ 
+    /*Oranize and trash the numbers repeat.*/
+    sort(&queueUp[0], tasksUp);
+    int new_size = noRepeat(&queueUp[0], tasksUp);
+    tasksUp = new_size;
 
 }
 
@@ -323,13 +336,12 @@ void modeUpControl() {
         case FLOOR1:
             if (SenFL1) {
                 
-                btn1_f = 0;     // clear flag button in panel.
                 
                 // STOP in floor1
                 DOWN_ASC = 1;
                 
                 
-                for (int i = 0; i < calls; i++) {       // clear call 0 in array of calls.
+                for (int i = 0; i < tasksUp; i++) {       // clear call 0 in array of calls.
                     queueUp[i] = queueUp[i + 1];
                 }
                 tasksUp--;
@@ -348,14 +360,13 @@ void modeUpControl() {
         case FLOOR2:
             if (SenFL2) {
                 
-                btn2_f = 0;     // clear flag button in panel.
 
                 // STOP in floor2
                 DOWN_ASC = 1;
                 DOOR2 = 1;
                 nowFL = FLOOR2;
 
-                for (int i = 0; i < calls; i++) {
+                for (int i = 0; i < tasksUp; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 tasksUp--;
@@ -370,14 +381,13 @@ void modeUpControl() {
         case FLOOR3:
             if (SenFL3) {
                 
-                btn3_f = 0;     // clear flag button in panel.
 
                 // STOP in floor3
                 DOWN_ASC = 1;
                 DOOR3 = 1;
                 nowFL = FLOOR3;
 
-                for (int i = 0; i < calls; i++) {
+                for (int i = 0; i < tasksUp; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 tasksUp--;
@@ -392,7 +402,6 @@ void modeUpControl() {
         case FLOOR4:
             if (SenFL4) {
                 
-                btn4_f = 0;     // clear flag button in panel.
 
                 
                 // STOP in floor4
@@ -400,7 +409,7 @@ void modeUpControl() {
                 DOOR4 = 1;
                 nowFL = FLOOR4;
 
-                for (int i = 0; i < calls; i++) {
+                for (int i = 0; i < tasksUp; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 tasksUp--;
@@ -415,13 +424,48 @@ void modeUpControl() {
 
 }
 
-void modeDown() {
-    modeDown_F = 1;
-    callsD = 0;
+void rutine_up(){
+    modeUpControl();
+                    
+    if (tasksUp == 0){        // when the calls is complete...
+        if((tasksDown > 0) || callsD > 0){
+            for(int i = 0; i < callsD; i++){
+                queueDown[tasksDown + i] = callsInUp[i];
+            }
+                            
+            sort(&queueDown[0], tasksDown + callsD);                    // Ordenar de mayor a menor.
+            tasksDown = noRepeat(&queueDown[0], tasksDown + callsD);    // Nueva lista sin repeticiones de ruta en modo bajada.
+                            
+            callFL_down = queueDown[0];
+            for (int re = 0; re < tasksDown; re++){
+                queueDown[re] = queueDown[re + 1];
+            }
+            tasksDown--;
+                            
+            /* Initialize mode Down */
+            modeDown();
+        }
+        else{
+            /* No calls en down mode and up mode, init waiting mode */
+            callFL_up = 0;
+            modeUp_F = 0;
+            
+        }
+    }
     
 }
 
+void modeDown() {
+    modeUp_F = 0;
+    modeDown_F = 1;     // Set flag mode down.
+    
+    callsD = 0;
+    
+    tasksUp = 0;
+}
+
 void modeUp() {
+    modeDown_F = 0;
     modeUp_F = 1;        // Set flag mode up.
     
     /*Contadores llamadas a piso */
@@ -429,13 +473,15 @@ void modeUp() {
     calls = 0;
     
     /*Numero de tareas en cola */
-    tasksUp = 0;
+    //tasksUp = 0;
     tasksDown = 0;
+    
+    unsigned int end_size = 0;
 
-    switch (callFL) {
+    switch (callFL_up) {
         case FLOOR1:
-
             if (nowFL == FLOOR1) {
+                
                 DOOR1 = 1;
                 dataPanelUp();
                 DOOR1 = 0;
@@ -443,24 +489,12 @@ void modeUp() {
 
                 /* Modo subida inicando! */
                 DOWN_ASC = 0;
-
+                
+                /* Ejecutando motor de modo subida. */
                 while (1) {
-
-                    modeUpControl();
-                    
-                    if (tasksUp == 0){        // when the calls is complete...
-                        if(callsD > 0){
-                            
-                        }else{
-                            /* No calls en down mode and up mode, init waiting mode */
-                            callFL = 0;
-                            modeUp_F = 0;
-                            break;
-                        }
-                    }
+                    rutine_up();
                 }
-            
-                /* CORRECCION A HACER: definir en que piso voy y determinar si subo o bajo. */
+                           
             } else {
                 do {
                     UP_ASC = 0;
@@ -470,6 +504,31 @@ void modeUp() {
                 DOOR1 = 1;
                 dataPanelUp();
                 DOOR1 = 0;
+            }
+            
+        case FLOOR2:
+            if (nowFL == FLOOR2) {
+                
+                DOOR2 = 1;
+                dataPanelUp();
+                DOOR2 = 0;
+                __delay_ms(300);
+
+                /* Modo subida inicando! */
+                DOWN_ASC = 0;
+
+                while (1) {
+                    rutine_up();                   
+                }
+                           
+            } else {
+                if (nowFL < FLOOR2){
+                    do{
+                        DOWN_ASC = 0;
+                    }while(!SenFL2);
+                    DOWN_ASC = 0;
+                    
+                }
             }
     }
 }
@@ -481,15 +540,15 @@ void main(void) {
     
     while (1) {
         if (btnUpFL1) {
-            callFL = FLOOR1;
+            callFL_up = FLOOR1;
             modeUp();
         }
         else if (btnUpFL2) {
-            callFL = FLOOR2;
+            callFL_up = FLOOR2;
             modeUp();
         } 
         else if (btnUpFL3) {
-            callFL = FLOOR3;
+            callFL_up = FLOOR3;
             modeUp();
         }
         
@@ -509,36 +568,35 @@ void __interrupt() ISR() {
     switch (PORTB) {
         case 0x01: // (RB0) Button up 1 is press.
             if (modeUp_F){             
-                if(!btn1_f){
                     if (nowFL < FLOOR1){
                         queueUp[tasksUp] = FLOOR1;
                         tasksUp++;
-                        sort(UpCalls, tasksUp);
-
+                        sort(&queueUp[0], tasksUp);
+                        int si = noRepeat(UpTasks, tasksUp);
+                        tasksUp = si;
+                       
                     }
-                }
             }
             break;
 
         case 0x02: // (RB1) button Up2 press 0x02 is 2 in decimal. 
             if (modeUp_F){
-                if(!btn2_f){
                     if (nowFL < FLOOR2){
                         queueUp[tasksUp] = FLOOR2;
                         tasksUp++;
-                        sort(UpCalls, tasksUp);
+                        
+                        sort(&queueUp[0], tasksUp);
+                        int si = noRepeat(&queueUp[0], tasksUp);
+                        tasksUp = si;
                     }
-                }
             }
             break;
 
         case 0x04: // (RB2) button Down2 press 0x04 is 4 in decimal.
             if (modeUp_F){
-                if(!down2_f){
                     callsInUp[callsD] = FLOOR2;
                     callsD++;
                     down2_f = 1;    // set flag button dwon floor 2.
-                }
             }
             break;
 
@@ -548,33 +606,29 @@ void __interrupt() ISR() {
             
         case 0x10: // (RB4) button Up3 press 0x08 is 8 in decimal.
             if (modeUp_F){
-                if(!btn3_f){
                     if (nowFL < FLOOR3){
                         queueUp[tasksUp] = FLOOR3;
                         tasksUp++;
-                        sort(UpCalls, calls);
+                        sort(&queueUp[0], tasksUp);
+                        int si = noRepeat(&queueUp[0], tasksUp);
+                        tasksUp = si;
                     }
-                }
             }
             break;
 
         case 0x20: // (RB5) button Down3
             if (modeUp_F){
-                if(!down3_f){
                     callsInUp[callsD] = FLOOR3;
                     callsD++;
                     down3_f = 1;    // set flag button dwon floor 3.
-                }
             }
             break;
 
         case 0x40: // (RB6)button down4 
             if (modeUp_F){
-                if(!down4_f){
                     callsInUp[callsD] = FLOOR4;
                     callsD++;
                     down4_f = 1;    // set flag button dwon floor 4.
-                }
             }
             break;
             

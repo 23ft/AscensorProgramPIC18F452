@@ -27,25 +27,33 @@
 [v ___lmul __lmul `(ul  1 e 4 0 ]
 "91 /opt/microchip/xc8/v2.32/pic/sources/c99/common/Umul64.c
 [v ___omul __omul `(uo  1 e 8 0 ]
-"128 /home/pipe/MPLABXProjects/AscensorProgramPIC18F452/AscensorProgramGit.X/main.c
+"139 /home/pipe/MPLABXProjects/AscensorProgramPIC18F452/AscensorProgramGit.X/main.c
 [v _boot boot `(v  1 e 1 0 ]
-"136
+"175
 [v _interruptsInit interruptsInit `(v  1 e 1 0 ]
-"142
+"181
 [v _bootAscensor bootAscensor `(v  1 e 1 0 ]
-"160
+"199
+[v _noRepeat noRepeat `(i  1 e 2 0 ]
+[v i2_noRepeat noRepeat `(i  1 e 2 0 ]
+"230
 [v _sort sort `(v  1 e 1 0 ]
-"202
+[v i2_sort sort `(v  1 e 1 0 ]
+"273
 [v _dataPanelUp dataPanelUp `(v  1 e 1 0 ]
-"253
+"334
 [v _modeUpControl modeUpControl `(v  1 e 1 0 ]
-"338
+"430
+[v _rutine_up rutine_up `(v  1 e 1 0 ]
+"461
+[v _modeDown modeDown `(v  1 e 1 0 ]
+"470
 [v _modeUp modeUp `(v  1 e 1 0 ]
-"375
+"539
 [v _main main `(v  1 e 1 0 ]
-"400
+"569
 [v _ISR ISR `IIH(v  1 e 1 0 ]
-[s S241 . 1 `uc 1 RA0 1 0 :1:0 
+[s S242 . 1 `uc 1 RA0 1 0 :1:0 
 `uc 1 RA1 1 0 :1:1 
 `uc 1 RA2 1 0 :1:2 
 `uc 1 RA3 1 0 :1:3 
@@ -54,7 +62,7 @@
 `uc 1 RA6 1 0 :1:6 
 ]
 "92 /opt/microchip/mplabx/v5.50/packs/Microchip/PIC18Fxxxx_DFP/1.2.26/xc8/pic/include/proc/pic18f452.h
-[s S249 . 1 `uc 1 AN0 1 0 :1:0 
+[s S250 . 1 `uc 1 AN0 1 0 :1:0 
 `uc 1 AN1 1 0 :1:1 
 `uc 1 AN2 1 0 :1:2 
 `uc 1 AN3 1 0 :1:3 
@@ -62,23 +70,23 @@
 `uc 1 AN4 1 0 :1:5 
 `uc 1 OSC2 1 0 :1:6 
 ]
-[s S257 . 1 `uc 1 . 1 0 :2:0 
+[s S258 . 1 `uc 1 . 1 0 :2:0 
 `uc 1 VREFM 1 0 :1:2 
 `uc 1 VREFP 1 0 :1:3 
 `uc 1 T0CKI 1 0 :1:4 
 `uc 1 SS 1 0 :1:5 
 `uc 1 CLKO 1 0 :1:6 
 ]
-[s S264 . 1 `uc 1 . 1 0 :5:0 
+[s S265 . 1 `uc 1 . 1 0 :5:0 
 `uc 1 LVDIN 1 0 :1:5 
 ]
-[s S267 . 1 `uc 1 ULPWUIN 1 0 :1:0 
+[s S268 . 1 `uc 1 ULPWUIN 1 0 :1:0 
 ]
-[u S269 . 1 `S241 1 . 1 0 `S249 1 . 1 0 `S257 1 . 1 0 `S264 1 . 1 0 `S267 1 . 1 0 ]
-[v _PORTAbits PORTAbits `VES269  1 e 1 @3968 ]
+[u S270 . 1 `S242 1 . 1 0 `S250 1 . 1 0 `S258 1 . 1 0 `S265 1 . 1 0 `S268 1 . 1 0 ]
+[v _PORTAbits PORTAbits `VES270  1 e 1 @3968 ]
 "197
 [v _PORTB PORTB `VEuc  1 e 1 @3969 ]
-[s S350 . 1 `uc 1 RB0 1 0 :1:0 
+[s S355 . 1 `uc 1 RB0 1 0 :1:0 
 `uc 1 RB1 1 0 :1:1 
 `uc 1 RB2 1 0 :1:2 
 `uc 1 RB3 1 0 :1:3 
@@ -88,7 +96,7 @@
 `uc 1 RB7 1 0 :1:7 
 ]
 "232
-[s S359 . 1 `uc 1 INT0 1 0 :1:0 
+[s S364 . 1 `uc 1 INT0 1 0 :1:0 
 `uc 1 INT1 1 0 :1:1 
 `uc 1 INT2 1 0 :1:2 
 `uc 1 CCP2 1 0 :1:3 
@@ -97,15 +105,15 @@
 `uc 1 PGC 1 0 :1:6 
 `uc 1 PGD 1 0 :1:7 
 ]
-[s S368 . 1 `uc 1 . 1 0 :3:0 
+[s S373 . 1 `uc 1 . 1 0 :3:0 
 `uc 1 CCP2A 1 0 :1:3 
 ]
-[s S371 . 1 `uc 1 . 1 0 :3:0 
+[s S376 . 1 `uc 1 . 1 0 :3:0 
 `uc 1 CCP2_PA2 1 0 :1:3 
 ]
-[u S374 . 1 `S350 1 . 1 0 `S359 1 . 1 0 `S368 1 . 1 0 `S371 1 . 1 0 ]
-[v _PORTBbits PORTBbits `VES374  1 e 1 @3969 ]
-[s S194 . 1 `uc 1 RD0 1 0 :1:0 
+[u S379 . 1 `S355 1 . 1 0 `S364 1 . 1 0 `S373 1 . 1 0 `S376 1 . 1 0 ]
+[v _PORTBbits PORTBbits `VES379  1 e 1 @3969 ]
+[s S195 . 1 `uc 1 RD0 1 0 :1:0 
 `uc 1 RD1 1 0 :1:1 
 `uc 1 RD2 1 0 :1:2 
 `uc 1 RD3 1 0 :1:3 
@@ -115,7 +123,7 @@
 `uc 1 RD7 1 0 :1:7 
 ]
 "520
-[s S203 . 1 `uc 1 PSP0 1 0 :1:0 
+[s S204 . 1 `uc 1 PSP0 1 0 :1:0 
 `uc 1 PSP1 1 0 :1:1 
 `uc 1 PSP2 1 0 :1:2 
 `uc 1 PSP3 1 0 :1:3 
@@ -124,12 +132,12 @@
 `uc 1 PSP6 1 0 :1:6 
 `uc 1 PSP7 1 0 :1:7 
 ]
-[s S212 . 1 `uc 1 . 1 0 :7:0 
+[s S213 . 1 `uc 1 . 1 0 :7:0 
 `uc 1 SS2 1 0 :1:7 
 ]
-[u S215 . 1 `S194 1 . 1 0 `S203 1 . 1 0 `S212 1 . 1 0 ]
-[v _PORTDbits PORTDbits `VES215  1 e 1 @3971 ]
-[s S154 . 1 `uc 1 LATC0 1 0 :1:0 
+[u S216 . 1 `S195 1 . 1 0 `S204 1 . 1 0 `S213 1 . 1 0 ]
+[v _PORTDbits PORTDbits `VES216  1 e 1 @3971 ]
+[s S155 . 1 `uc 1 LATC0 1 0 :1:0 
 `uc 1 LATC1 1 0 :1:1 
 `uc 1 LATC2 1 0 :1:2 
 `uc 1 LATC3 1 0 :1:3 
@@ -139,7 +147,7 @@
 `uc 1 LATC7 1 0 :1:7 
 ]
 "961
-[s S163 . 1 `uc 1 LC0 1 0 :1:0 
+[s S164 . 1 `uc 1 LC0 1 0 :1:0 
 `uc 1 LC1 1 0 :1:1 
 `uc 1 LC2 1 0 :1:2 
 `uc 1 LC3 1 0 :1:3 
@@ -148,11 +156,9 @@
 `uc 1 LC6 1 0 :1:6 
 `uc 1 LC7 1 0 :1:7 
 ]
-[u S172 . 1 `S154 1 . 1 0 `S163 1 . 1 0 ]
-[v _LATCbits LATCbits `VES172  1 e 1 @3979 ]
-"1046
-[v _LATD LATD `VEuc  1 e 1 @3980 ]
-[s S304 . 1 `uc 1 LATD0 1 0 :1:0 
+[u S173 . 1 `S155 1 . 1 0 `S164 1 . 1 0 ]
+[v _LATCbits LATCbits `VES173  1 e 1 @3979 ]
+[s S305 . 1 `uc 1 LATD0 1 0 :1:0 
 `uc 1 LATD1 1 0 :1:1 
 `uc 1 LATD2 1 0 :1:2 
 `uc 1 LATD3 1 0 :1:3 
@@ -162,7 +168,7 @@
 `uc 1 LATD7 1 0 :1:7 
 ]
 "1073
-[s S313 . 1 `uc 1 LD0 1 0 :1:0 
+[s S314 . 1 `uc 1 LD0 1 0 :1:0 
 `uc 1 LD1 1 0 :1:1 
 `uc 1 LD2 1 0 :1:2 
 `uc 1 LD3 1 0 :1:3 
@@ -171,8 +177,8 @@
 `uc 1 LD6 1 0 :1:6 
 `uc 1 LD7 1 0 :1:7 
 ]
-[u S322 . 1 `S304 1 . 1 0 `S313 1 . 1 0 ]
-[v _LATDbits LATDbits `VES322  1 e 1 @3980 ]
+[u S323 . 1 `S305 1 . 1 0 `S314 1 . 1 0 ]
+[v _LATDbits LATDbits `VES323  1 e 1 @3980 ]
 "1210
 [v _TRISA TRISA `VEuc  1 e 1 @3986 ]
 "1408
@@ -183,22 +189,22 @@
 [v _TRISD TRISD `VEuc  1 e 1 @3989 ]
 "3591
 [v _ADCON1 ADCON1 `VEuc  1 e 1 @4033 ]
-[s S29 . 1 `uc 1 NOT_BOR 1 0 :1:0 
+[s S30 . 1 `uc 1 NOT_BOR 1 0 :1:0 
 ]
 "4588
-[s S31 . 1 `uc 1 . 1 0 :1:0 
+[s S32 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 NOT_POR 1 0 :1:1 
 ]
-[s S34 . 1 `uc 1 . 1 0 :2:0 
+[s S35 . 1 `uc 1 . 1 0 :2:0 
 `uc 1 NOT_PD 1 0 :1:2 
 ]
-[s S37 . 1 `uc 1 . 1 0 :3:0 
+[s S38 . 1 `uc 1 . 1 0 :3:0 
 `uc 1 NOT_TO 1 0 :1:3 
 ]
-[s S40 . 1 `uc 1 . 1 0 :4:0 
+[s S41 . 1 `uc 1 . 1 0 :4:0 
 `uc 1 NOT_RI 1 0 :1:4 
 ]
-[s S43 . 1 `uc 1 nBOR 1 0 :1:0 
+[s S44 . 1 `uc 1 nBOR 1 0 :1:0 
 `uc 1 nPOR 1 0 :1:1 
 `uc 1 nPD 1 0 :1:2 
 `uc 1 nTO 1 0 :1:3 
@@ -206,10 +212,10 @@
 `uc 1 . 1 0 :2:5 
 `uc 1 IPEN 1 0 :1:7 
 ]
-[s S51 . 1 `uc 1 . 1 0 :7:0 
+[s S52 . 1 `uc 1 . 1 0 :7:0 
 `uc 1 NOT_IPEN 1 0 :1:7 
 ]
-[s S54 . 1 `uc 1 BOR 1 0 :1:0 
+[s S55 . 1 `uc 1 BOR 1 0 :1:0 
 `uc 1 POR 1 0 :1:1 
 `uc 1 PD 1 0 :1:2 
 `uc 1 TO 1 0 :1:3 
@@ -217,9 +223,9 @@
 `uc 1 . 1 0 :2:5 
 `uc 1 nIPEN 1 0 :1:7 
 ]
-[u S62 . 1 `S29 1 . 1 0 `S31 1 . 1 0 `S34 1 . 1 0 `S37 1 . 1 0 `S40 1 . 1 0 `S43 1 . 1 0 `S51 1 . 1 0 `S54 1 . 1 0 ]
-[v _RCONbits RCONbits `VES62  1 e 1 @4048 ]
-[s S105 . 1 `uc 1 RBIF 1 0 :1:0 
+[u S63 . 1 `S30 1 . 1 0 `S32 1 . 1 0 `S35 1 . 1 0 `S38 1 . 1 0 `S41 1 . 1 0 `S44 1 . 1 0 `S52 1 . 1 0 `S55 1 . 1 0 ]
+[v _RCONbits RCONbits `VES63  1 e 1 @4048 ]
+[s S106 . 1 `uc 1 RBIF 1 0 :1:0 
 `uc 1 INT0IF 1 0 :1:1 
 `uc 1 TMR0IF 1 0 :1:2 
 `uc 1 RBIE 1 0 :1:3 
@@ -229,7 +235,7 @@
 `uc 1 GIE_GIEH 1 0 :1:7 
 ]
 "5344
-[s S114 . 1 `uc 1 . 1 0 :1:0 
+[s S115 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 INT0F 1 0 :1:1 
 `uc 1 T0IF 1 0 :1:2 
 `uc 1 . 1 0 :1:3 
@@ -238,93 +244,178 @@
 `uc 1 PEIE 1 0 :1:6 
 `uc 1 GIE 1 0 :1:7 
 ]
-[s S123 . 1 `uc 1 . 1 0 :6:0 
+[s S124 . 1 `uc 1 . 1 0 :6:0 
 `uc 1 GIEL 1 0 :1:6 
 `uc 1 GIEH 1 0 :1:7 
 ]
-[u S127 . 1 `S105 1 . 1 0 `S114 1 . 1 0 `S123 1 . 1 0 ]
-[v _INTCONbits INTCONbits `VES127  1 e 1 @4082 ]
-"109 /home/pipe/MPLABXProjects/AscensorProgramPIC18F452/AscensorProgramGit.X/main.c
+[u S128 . 1 `S106 1 . 1 0 `S115 1 . 1 0 `S124 1 . 1 0 ]
+[v _INTCONbits INTCONbits `VES128  1 e 1 @4082 ]
+"117 /home/pipe/MPLABXProjects/AscensorProgramPIC18F452/AscensorProgramGit.X/main.c
+[v _tasksDown tasksDown `i  1 e 2 0 ]
+[v _tasksUp tasksUp `i  1 e 2 0 ]
 [v _calls calls `i  1 e 2 0 ]
 [v _callsD callsD `i  1 e 2 0 ]
-[v _callFL callFL `i  1 e 2 0 ]
+[v _callFL_up callFL_up `i  1 e 2 0 ]
+[v _callFL_down callFL_down `i  1 e 2 0 ]
 [v _nowFL nowFL `i  1 e 2 0 ]
 [v _queueUp queueUp `[100]i  1 e 200 0 ]
 [v _queueDown queueDown `[100]i  1 e 200 0 ]
 [v _callsInUp callsInUp `[100]i  1 e 200 0 ]
-[v _numUps numUps `i  1 e 2 0 ]
-"111
-[v _upF upF `ui  1 e 2 0 ]
-"375
+"119
+[v _UpTasks UpTasks `*.39i  1 e 2 0 ]
+"120
+[v _modeUp_F modeUp_F `ui  1 e 2 0 ]
+[v _modeDown_F modeDown_F `ui  1 e 2 0 ]
+"121
+[v _down2_f down2_f `ui  1 e 2 0 ]
+[v _down3_f down3_f `ui  1 e 2 0 ]
+[v _down4_f down4_f `ui  1 e 2 0 ]
+"539
 [v _main main `(v  1 e 1 0 ]
 {
-"396
+"565
 } 0
-"338
+"470
 [v _modeUp modeUp `(v  1 e 1 0 ]
 {
-"373
+"537
 } 0
-"253
+"430
+[v _rutine_up rutine_up `(v  1 e 1 0 ]
+{
+"443
+[v rutine_up@re re `i  1 a 2 16 ]
+"435
+[v rutine_up@i i `i  1 a 2 14 ]
+"459
+} 0
+"334
 [v _modeUpControl modeUpControl `(v  1 e 1 0 ]
 {
-"323
-[v modeUpControl@i_486 i `i  1 a 2 39 ]
-"304
-[v modeUpControl@i_485 i `i  1 a 2 37 ]
-"285
-[v modeUpControl@i_484 i `i  1 a 2 35 ]
-"262
-[v modeUpControl@i i `i  1 a 2 33 ]
-"336
+"415
+[v modeUpControl@i_515 i `i  1 a 2 10 ]
+"393
+[v modeUpControl@i_514 i `i  1 a 2 8 ]
+"372
+[v modeUpControl@i_513 i `i  1 a 2 6 ]
+"347
+[v modeUpControl@i i `i  1 a 2 4 ]
+"428
 } 0
-"202
+"273
 [v _dataPanelUp dataPanelUp `(v  1 e 1 0 ]
 {
-"247
-[v dataPanelUp@tamano tamano `i  1 a 2 29 ]
-"246
-[v dataPanelUp@UpCalls UpCalls `*.39i  1 a 2 27 ]
-"251
+"325
+[v dataPanelUp@new_size new_size `i  1 a 2 0 ]
+"328
 } 0
-"160
+"230
 [v _sort sort `(v  1 e 1 0 ]
 {
-"188
-[v sort@k k `i  1 a 2 19 ]
-"170
-[v sort@h h `i  1 a 2 25 ]
-"197
-[v sort@j j `i  1 a 2 21 ]
-"161
-[v sort@temp temp `i  1 a 2 23 ]
-[v sort@sizesMod sizesMod `i  1 a 2 17 ]
-[v sort@nums nums `i  1 a 2 15 ]
-[v sort@pos pos `i  1 a 2 13 ]
-"160
-[v sort@p p `*.39i  1 p 2 4 ]
-[v sort@sizes sizes `i  1 p 2 6 ]
-"162
-[v sort@result result `[100]i  1 s 200 result ]
-"200
+"258
+[v sort@k k `i  1 a 2 206 ]
+"240
+[v sort@h h `i  1 a 2 212 ]
+"267
+[v sort@j j `i  1 a 2 208 ]
+"232
+[v sort@result result `[100]i  1 a 200 0 ]
+"231
+[v sort@temp temp `i  1 a 2 210 ]
+[v sort@sizesMod sizesMod `i  1 a 2 204 ]
+[v sort@nums nums `i  1 a 2 202 ]
+[v sort@pos pos `i  1 a 2 200 ]
+"230
+[v sort@p p `*.39i  1 p 2 30 ]
+[v sort@sizes sizes `i  1 p 2 32 ]
+"270
 } 0
-"136
+"199
+[v _noRepeat noRepeat `(i  1 e 2 0 ]
+{
+"215
+[v noRepeat@shift shift `i  1 a 2 40 ]
+"213
+[v noRepeat@t t `i  1 a 2 38 ]
+"210
+[v noRepeat@comp comp `i  1 a 2 46 ]
+"208
+[v noRepeat@temp temp `i  1 a 2 42 ]
+"200
+[v noRepeat@size size `i  1 a 2 44 ]
+"199
+[v noRepeat@po po `*.39i  1 p 2 30 ]
+[v noRepeat@sixes sixes `i  1 p 2 32 ]
+"228
+} 0
+"461
+[v _modeDown modeDown `(v  1 e 1 0 ]
+{
+"468
+} 0
+"175
 [v _interruptsInit interruptsInit `(v  1 e 1 0 ]
 {
-"140
+"179
 } 0
-"142
+"181
 [v _bootAscensor bootAscensor `(v  1 e 1 0 ]
 {
-"158
+"197
 } 0
-"128
+"139
 [v _boot boot `(v  1 e 1 0 ]
 {
-"134
+"173
 } 0
-"400
+"569
 [v _ISR ISR `IIH(v  1 e 1 0 ]
 {
-"435
+"616
+[v ISR@si_548 si `i  1 a 2 28 ]
+"592
+[v ISR@si_547 si `i  1 a 2 26 ]
+"578
+[v ISR@si si `i  1 a 2 24 ]
+"641
+} 0
+"230
+[v i2_sort sort `(v  1 e 1 0 ]
+{
+"232
+[v i2sort@result result `[100]i  1 a 200 0 ]
+"240
+[v i2sort@h h `i  1 a 2 212 ]
+"231
+[v i2sort@temp temp `i  1 a 2 210 ]
+"267
+[v i2sort@j j `i  1 a 2 208 ]
+"258
+[v i2sort@k k `i  1 a 2 206 ]
+"231
+[v i2sort@sizesMod sizesMod `i  1 a 2 204 ]
+[v i2sort@nums nums `i  1 a 2 202 ]
+[v i2sort@pos pos `i  1 a 2 200 ]
+"230
+[v i2sort@p p `*.39i  1 p 2 0 ]
+[v i2sort@sizes sizes `i  1 p 2 2 ]
+"270
+} 0
+"199
+[v i2_noRepeat noRepeat `(i  1 e 2 0 ]
+{
+"210
+[v i2noRepeat@comp comp `i  1 a 2 16 ]
+"200
+[v i2noRepeat@size size `i  1 a 2 14 ]
+"208
+[v i2noRepeat@temp temp `i  1 a 2 12 ]
+"215
+[v i2noRepeat@shift shift `i  1 a 2 10 ]
+"213
+[v i2noRepeat@t t `i  1 a 2 8 ]
+"199
+[v i2noRepeat@po po `*.39i  1 p 2 0 ]
+[v i2noRepeat@sixes sixes `i  1 p 2 2 ]
+"228
 } 0
