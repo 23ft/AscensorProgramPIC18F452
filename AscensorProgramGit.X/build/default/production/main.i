@@ -7,7 +7,7 @@
 # 1 "/opt/microchip/mplabx/v5.50/packs/Microchip/PIC18Fxxxx_DFP/1.2.26/xc8/pic/include/language_support.h" 1 3
 # 2 "<built-in>" 2
 # 1 "main.c" 2
-# 29 "main.c"
+# 26 "main.c"
 #pragma config OSC = HS
 #pragma config OSCS = OFF
 
@@ -3848,11 +3848,11 @@ extern __attribute__((nonreentrant)) void _delaywdt(unsigned long);
 #pragma intrinsic(_delay3)
 extern __attribute__((nonreentrant)) void _delay3(unsigned char);
 # 33 "/opt/microchip/mplabx/v5.50/packs/Microchip/PIC18Fxxxx_DFP/1.2.26/xc8/pic/include/xc.h" 2 3
-# 75 "main.c" 2
-# 117 "main.c"
+# 72 "main.c" 2
+# 114 "main.c"
 int tasksDown, tasksUp, calls, callsD, callFL_up, callFL_down, nowFL, queueUp[100], queueDown[100], callsInUp[100];
 
-int *UpTasks, (*func_norepeat)();
+int *UpTasks;
 unsigned int modeUp_F, modeDown_F, btn1_f, btn2_f, btn3_f, btn4_f, btnCD_f, btnOD_f;
 unsigned int up1_f, up2_f, down2_f, up3_f, down3_f, down4_f;
 
@@ -3860,13 +3860,21 @@ unsigned int up1_f, up2_f, down2_f, up3_f, down3_f, down4_f;
 
 
 
-void bootAscensor();
 
-void modeUp();
-void callsUp();
 
-void modeDown();
+void bootAscensor(void);
+
+void rutine_up(void);
+void dataPanelUp(void);
+
+void modeUpControl(void);
+void modeDownControl(void);
+
+void modeUp(void);
+void modeDown(void);
+
 void sort(int *p, int sizes);
+int noRepeat(int *po, int sixes);
 
 void interruptsInit(void);
 
@@ -3890,7 +3898,7 @@ void boot() {
 
     modeUp_F = 0;
     modeDown_F = 0;
-# 172 "main.c"
+# 177 "main.c"
     UpTasks = &queueUp[0];
 }
 
@@ -3900,7 +3908,7 @@ void interruptsInit(void) {
     INTCONbits.PEIE = 1;
 }
 
-void bootAscensor() {
+void bootAscensor(void) {
     LATCbits.LC0 = 1;
     LATCbits.LC1 = 1;
 
@@ -3992,7 +4000,7 @@ void sort(int *p, int sizes) {
 }
 
 
-void dataPanelUp() {
+void dataPanelUp(void) {
     do {
         if (PORTAbits.RA0) {
 
@@ -4049,11 +4057,8 @@ void dataPanelUp() {
 
 }
 
-void modeDownControl(){
 
-}
-
-void modeUpControl() {
+void modeUpControl(void) {
 
     static int cont = 0;
 
@@ -4142,16 +4147,16 @@ void modeUpControl() {
                 LATDbits.LD3 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
 
-                LATCbits.LC1 = 0;
+
             }
             break;
     }
 
 }
 
-void rutine_up(){
-    modeUpControl();
+void rutine_up(void){
 
+    modeUpControl();
     if (tasksUp == 0){
         if((tasksDown > 0) || callsD > 0){
             for(int i = 0; i < callsD; i++){
@@ -4180,7 +4185,7 @@ void rutine_up(){
 
 }
 
-void modeDown() {
+void modeDown(void) {
     modeUp_F = 0;
     modeDown_F = 1;
 
@@ -4189,7 +4194,7 @@ void modeDown() {
     tasksUp = 0;
 }
 
-void modeUp() {
+void modeUp(void) {
     modeDown_F = 0;
     modeUp_F = 1;
 
