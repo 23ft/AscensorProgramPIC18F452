@@ -27,31 +27,33 @@
 [v ___lmul __lmul `(ul  1 e 4 0 ]
 "91 /opt/microchip/xc8/v2.32/pic/sources/c99/common/Umul64.c
 [v ___omul __omul `(uo  1 e 8 0 ]
-"144 /home/pipe/MPLABXProjects/AscensorProgramPIC18F452/AscensorProgramGit.X/main.c
+"156 /home/pipe/MPLABXProjects/AscensorProgramPIC18F452/AscensorProgramGit.X/main.c
 [v _boot boot `(v  1 e 1 0 ]
-"180
+"182
 [v _interruptsInit interruptsInit `(v  1 e 1 0 ]
-"186
+"188
 [v _bootAscensor bootAscensor `(v  1 e 1 0 ]
-"204
+"206
 [v _noRepeat noRepeat `(i  1 e 2 0 ]
 [v i2_noRepeat noRepeat `(i  1 e 2 0 ]
-"235
+"237
 [v _sort sort `(v  1 e 1 0 ]
 [v i2_sort sort `(v  1 e 1 0 ]
-"278
+"280
 [v _dataPanelUp dataPanelUp `(v  1 e 1 0 ]
-"336
-[v _modeUpControl modeUpControl `(v  1 e 1 0 ]
-"432
-[v _rutine_up rutine_up `(v  1 e 1 0 ]
-"463
-[v _modeDown modeDown `(v  1 e 1 0 ]
-"472
-[v _modeUp modeUp `(v  1 e 1 0 ]
-"541
+"337
+[v _controlCalls controlCalls `(v  1 e 1 0 ]
+"425
+[v _rutine_down rutine_down `(i  1 e 2 0 ]
+"429
+[v _rutine_up rutine_up `(i  1 e 2 0 ]
+"465
+[v _selectionMode selectionMode `(v  1 e 1 0 ]
+"490
+[v _modeControl modeControl `(v  1 e 1 0 ]
+"667
 [v _main main `(v  1 e 1 0 ]
-"571
+"713
 [v _ISR ISR `IIH(v  1 e 1 0 ]
 [s S241 . 1 `uc 1 RA0 1 0 :1:0 
 `uc 1 RA1 1 0 :1:1 
@@ -86,7 +88,7 @@
 [v _PORTAbits PORTAbits `VES269  1 e 1 @3968 ]
 "197
 [v _PORTB PORTB `VEuc  1 e 1 @3969 ]
-[s S354 . 1 `uc 1 RB0 1 0 :1:0 
+[s S351 . 1 `uc 1 RB0 1 0 :1:0 
 `uc 1 RB1 1 0 :1:1 
 `uc 1 RB2 1 0 :1:2 
 `uc 1 RB3 1 0 :1:3 
@@ -96,7 +98,7 @@
 `uc 1 RB7 1 0 :1:7 
 ]
 "232
-[s S363 . 1 `uc 1 INT0 1 0 :1:0 
+[s S360 . 1 `uc 1 INT0 1 0 :1:0 
 `uc 1 INT1 1 0 :1:1 
 `uc 1 INT2 1 0 :1:2 
 `uc 1 CCP2 1 0 :1:3 
@@ -105,14 +107,16 @@
 `uc 1 PGC 1 0 :1:6 
 `uc 1 PGD 1 0 :1:7 
 ]
-[s S372 . 1 `uc 1 . 1 0 :3:0 
+[s S369 . 1 `uc 1 . 1 0 :3:0 
 `uc 1 CCP2A 1 0 :1:3 
 ]
-[s S375 . 1 `uc 1 . 1 0 :3:0 
+[s S372 . 1 `uc 1 . 1 0 :3:0 
 `uc 1 CCP2_PA2 1 0 :1:3 
 ]
-[u S378 . 1 `S354 1 . 1 0 `S363 1 . 1 0 `S372 1 . 1 0 `S375 1 . 1 0 ]
-[v _PORTBbits PORTBbits `VES378  1 e 1 @3969 ]
+[u S375 . 1 `S351 1 . 1 0 `S360 1 . 1 0 `S369 1 . 1 0 `S372 1 . 1 0 ]
+[v _PORTBbits PORTBbits `VES375  1 e 1 @3969 ]
+"489
+[v _PORTD PORTD `VEuc  1 e 1 @3971 ]
 [s S194 . 1 `uc 1 RD0 1 0 :1:0 
 `uc 1 RD1 1 0 :1:1 
 `uc 1 RD2 1 0 :1:2 
@@ -250,172 +254,175 @@
 ]
 [u S127 . 1 `S105 1 . 1 0 `S114 1 . 1 0 `S123 1 . 1 0 ]
 [v _INTCONbits INTCONbits `VES127  1 e 1 @4082 ]
-"114 /home/pipe/MPLABXProjects/AscensorProgramPIC18F452/AscensorProgramGit.X/main.c
+"129 /home/pipe/MPLABXProjects/AscensorProgramPIC18F452/AscensorProgramGit.X/main.c
 [v _tasksDown tasksDown `i  1 e 2 0 ]
 [v _tasksUp tasksUp `i  1 e 2 0 ]
-[v _calls calls `i  1 e 2 0 ]
+[v _callsU callsU `i  1 e 2 0 ]
 [v _callsD callsD `i  1 e 2 0 ]
-[v _callFL_up callFL_up `i  1 e 2 0 ]
-[v _callFL_down callFL_down `i  1 e 2 0 ]
+[v _call_init call_init `i  1 e 2 0 ]
 [v _nowFL nowFL `i  1 e 2 0 ]
+[v _prevFL prevFL `i  1 e 2 0 ]
 [v _queueUp queueUp `[100]i  1 e 200 0 ]
 [v _queueDown queueDown `[100]i  1 e 200 0 ]
 [v _callsInUp callsInUp `[100]i  1 e 200 0 ]
-"116
-[v _UpTasks UpTasks `*.39i  1 e 2 0 ]
-"117
+"131
 [v _modeUp_F modeUp_F `ui  1 e 2 0 ]
 [v _modeDown_F modeDown_F `ui  1 e 2 0 ]
-"118
-[v _down2_f down2_f `ui  1 e 2 0 ]
-[v _down3_f down3_f `ui  1 e 2 0 ]
-[v _down4_f down4_f `ui  1 e 2 0 ]
-"541
+[v _from_up_change from_up_change `ui  1 e 2 0 ]
+[v _from_down_change from_down_change `ui  1 e 2 0 ]
+"667
 [v _main main `(v  1 e 1 0 ]
 {
-"567
+"709
 } 0
-"472
-[v _modeUp modeUp `(v  1 e 1 0 ]
+"490
+[v _modeControl modeControl `(v  1 e 1 0 ]
 {
-"539
+[v modeControl@select_mode select_mode `ui  1 p 2 70 ]
+"665
 } 0
-"432
-[v _rutine_up rutine_up `(v  1 e 1 0 ]
+"465
+[v _selectionMode selectionMode `(v  1 e 1 0 ]
 {
-"445
-[v rutine_up@re re `i  1 a 2 14 ]
-"437
-[v rutine_up@i i `i  1 a 2 12 ]
-"461
+[v selectionMode@mode_s mode_s `ui  1 p 2 68 ]
+"488
 } 0
-"336
-[v _modeUpControl modeUpControl `(v  1 e 1 0 ]
+"429
+[v _rutine_up rutine_up `(i  1 e 2 0 ]
 {
-"417
-[v modeUpControl@i_512 i `i  1 a 2 8 ]
-"395
-[v modeUpControl@i_511 i `i  1 a 2 6 ]
-"374
-[v modeUpControl@i_510 i `i  1 a 2 4 ]
-"349
-[v modeUpControl@i i `i  1 a 2 2 ]
-"430
+"442
+[v rutine_up@re re `i  1 a 2 66 ]
+"434
+[v rutine_up@i i `i  1 a 2 64 ]
+"463
 } 0
-"278
+"337
+[v _controlCalls controlCalls `(v  1 e 1 0 ]
+{
+"410
+[v controlCalls@i_497 i `i  1 a 2 58 ]
+"391
+[v controlCalls@i_496 i `i  1 a 2 56 ]
+"369
+[v controlCalls@i_495 i `i  1 a 2 54 ]
+"347
+[v controlCalls@i i `i  1 a 2 52 ]
+"423
+} 0
+"280
 [v _dataPanelUp dataPanelUp `(v  1 e 1 0 ]
 {
-"330
+"332
 [v dataPanelUp@new_size new_size `i  1 a 2 48 ]
-"333
+"335
 } 0
-"235
+"237
 [v _sort sort `(v  1 e 1 0 ]
 {
-"263
+"265
 [v sort@k k `i  1 a 2 206 ]
-"245
+"247
 [v sort@h h `i  1 a 2 212 ]
-"272
+"274
 [v sort@j j `i  1 a 2 208 ]
-"237
+"239
 [v sort@result result `[100]i  1 a 200 0 ]
-"236
+"238
 [v sort@temp temp `i  1 a 2 210 ]
 [v sort@sizesMod sizesMod `i  1 a 2 204 ]
 [v sort@nums nums `i  1 a 2 202 ]
 [v sort@pos pos `i  1 a 2 200 ]
-"235
+"237
 [v sort@p p `*.39i  1 p 2 30 ]
 [v sort@sizes sizes `i  1 p 2 32 ]
-"275
+"277
 } 0
-"204
+"206
 [v _noRepeat noRepeat `(i  1 e 2 0 ]
 {
-"220
+"222
 [v noRepeat@shift shift `i  1 a 2 40 ]
-"218
+"220
 [v noRepeat@t t `i  1 a 2 38 ]
-"215
+"217
 [v noRepeat@comp comp `i  1 a 2 46 ]
-"213
+"215
 [v noRepeat@temp temp `i  1 a 2 42 ]
-"205
+"207
 [v noRepeat@size size `i  1 a 2 44 ]
-"204
+"206
 [v noRepeat@po po `*.39i  1 p 2 30 ]
 [v noRepeat@sixes sixes `i  1 p 2 32 ]
-"233
+"235
 } 0
-"463
-[v _modeDown modeDown `(v  1 e 1 0 ]
+"425
+[v _rutine_down rutine_down `(i  1 e 2 0 ]
 {
-"470
+"427
 } 0
-"180
+"182
 [v _interruptsInit interruptsInit `(v  1 e 1 0 ]
 {
-"184
-} 0
 "186
+} 0
+"188
 [v _bootAscensor bootAscensor `(v  1 e 1 0 ]
 {
-"202
+"204
 } 0
-"144
+"156
 [v _boot boot `(v  1 e 1 0 ]
 {
-"178
+"180
 } 0
-"571
+"713
 [v _ISR ISR `IIH(v  1 e 1 0 ]
 {
-"618
-[v ISR@si_545 si `i  1 a 2 28 ]
-"594
-[v ISR@si_544 si `i  1 a 2 26 ]
-"580
+"759
+[v ISR@si_534 si `i  1 a 2 28 ]
+"736
+[v ISR@si_533 si `i  1 a 2 26 ]
+"722
 [v ISR@si si `i  1 a 2 24 ]
-"643
+"782
 } 0
-"235
+"237
 [v i2_sort sort `(v  1 e 1 0 ]
 {
-"237
+"239
 [v i2sort@result result `[100]i  1 a 200 0 ]
-"245
+"247
 [v i2sort@h h `i  1 a 2 212 ]
-"236
+"238
 [v i2sort@temp temp `i  1 a 2 210 ]
-"272
+"274
 [v i2sort@j j `i  1 a 2 208 ]
-"263
+"265
 [v i2sort@k k `i  1 a 2 206 ]
-"236
+"238
 [v i2sort@sizesMod sizesMod `i  1 a 2 204 ]
 [v i2sort@nums nums `i  1 a 2 202 ]
 [v i2sort@pos pos `i  1 a 2 200 ]
-"235
+"237
 [v i2sort@p p `*.39i  1 p 2 0 ]
 [v i2sort@sizes sizes `i  1 p 2 2 ]
-"275
+"277
 } 0
-"204
+"206
 [v i2_noRepeat noRepeat `(i  1 e 2 0 ]
 {
-"215
+"217
 [v i2noRepeat@comp comp `i  1 a 2 16 ]
-"205
+"207
 [v i2noRepeat@size size `i  1 a 2 14 ]
-"213
+"215
 [v i2noRepeat@temp temp `i  1 a 2 12 ]
-"220
+"222
 [v i2noRepeat@shift shift `i  1 a 2 10 ]
-"218
+"220
 [v i2noRepeat@t t `i  1 a 2 8 ]
-"204
+"206
 [v i2noRepeat@po po `*.39i  1 p 2 0 ]
 [v i2noRepeat@sixes sixes `i  1 p 2 2 ]
-"233
+"235
 } 0

@@ -7,7 +7,7 @@
 # 1 "/opt/microchip/mplabx/v5.50/packs/Microchip/PIC18Fxxxx_DFP/1.2.26/xc8/pic/include/language_support.h" 1 3
 # 2 "<built-in>" 2
 # 1 "main.c" 2
-# 26 "main.c"
+# 31 "main.c"
 #pragma config OSC = HS
 #pragma config OSCS = OFF
 
@@ -3848,14 +3848,11 @@ extern __attribute__((nonreentrant)) void _delaywdt(unsigned long);
 #pragma intrinsic(_delay3)
 extern __attribute__((nonreentrant)) void _delay3(unsigned char);
 # 33 "/opt/microchip/mplabx/v5.50/packs/Microchip/PIC18Fxxxx_DFP/1.2.26/xc8/pic/include/xc.h" 2 3
-# 72 "main.c" 2
-# 114 "main.c"
-int tasksDown, tasksUp, calls, callsD, callFL_up, callFL_down, nowFL, queueUp[100], queueDown[100], callsInUp[100];
+# 77 "main.c" 2
+# 129 "main.c"
+int tasksDown, tasksUp, callsU, callsD, call_init, nowFL, prevFL, queueUp[100], queueDown[100], callsInUp[100];
 
-int *UpTasks;
-unsigned int modeUp_F, modeDown_F, btn1_f, btn2_f, btn3_f, btn4_f, btnCD_f, btnOD_f;
-unsigned int up1_f, up2_f, down2_f, up3_f, down3_f, down4_f;
-
+unsigned int modeUp_F, modeDown_F, from_up_change, from_down_change;
 
 
 
@@ -3864,7 +3861,7 @@ unsigned int up1_f, up2_f, down2_f, up3_f, down3_f, down4_f;
 
 void bootAscensor(void);
 
-void rutine_up(void);
+int rutine_up(void);
 void dataPanelUp(void);
 
 void modeUpControl(void);
@@ -3890,16 +3887,20 @@ void boot() {
 
     tasksDown = 0;
     tasksUp = 0;
-    calls = 0;
+    callsU = 0;
     callsD = 0;
-    callFL_up = 0;
+    call_init = 0;
+    prevFL = 0;
     nowFL = 0;
 
 
     modeUp_F = 0;
     modeDown_F = 0;
-# 177 "main.c"
-    UpTasks = &queueUp[0];
+
+    from_up_change = 0;
+    from_down_change = 0;
+
+
 }
 
 void interruptsInit(void) {
@@ -3913,7 +3914,7 @@ void bootAscensor(void) {
     LATCbits.LC1 = 1;
 
     if (PORTDbits.RD4 == 1) {
-        nowFL = 1;
+        prevFL = 1;
         return;
     } else {
         LATCbits.LC0 = 0;
@@ -3921,7 +3922,7 @@ void bootAscensor(void) {
             continue;
         }
         LATCbits.LC0 = 1;
-        nowFL = 1;
+        prevFL = 1;
         return;
     }
 }
@@ -4057,17 +4058,13 @@ void dataPanelUp(void) {
 
 }
 
+void controlCalls(){
+    switch(PORTD){
+        case 0x10:
+            nowFL = 1;
+            if (queueUp[0] == 1) {
 
-void modeUpControl(void) {
-
-    static int cont = 0;
-
-    switch (queueUp[cont]) {
-        case 1:
-            if (PORTDbits.RD4) {
-
-
-
+                prevFL = 1;
                 LATCbits.LC1 = 1;
 
 
@@ -4076,7 +4073,6 @@ void modeUpControl(void) {
                 }
                 tasksUp--;
                 LATDbits.LD0 = 1;
-                nowFL = 1;
 
                 dataPanelUp();
 
@@ -4085,21 +4081,21 @@ void modeUpControl(void) {
 
                 LATCbits.LC1 = 0;
             }
+
             break;
+        case 0x20:
+            nowFL = 2;
+            if (queueUp[0] == 2) {
 
-        case 2:
-            if (PORTDbits.RD5) {
-
-
-
+                prevFL = 2;
                 LATCbits.LC1 = 1;
-                LATDbits.LD1 = 1;
-                nowFL = 2;
 
                 for (int i = 0; i < tasksUp; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 tasksUp--;
+
+                LATDbits.LD1 = 1;
                 dataPanelUp();
                 LATDbits.LD1 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
@@ -4107,20 +4103,21 @@ void modeUpControl(void) {
                 LATCbits.LC1 = 0;
             }
             break;
+        case 0x40:
+            nowFL = 3;
+            if (queueUp[0] == 3) {
 
-        case 3:
-            if (PORTDbits.RD6) {
 
 
-
+                prevFL = 3;
                 LATCbits.LC1 = 1;
-                LATDbits.LD2 = 1;
-                nowFL = 3;
 
                 for (int i = 0; i < tasksUp; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 tasksUp--;
+
+                LATDbits.LD2 = 1;
                 dataPanelUp();
                 LATDbits.LD2 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
@@ -4128,21 +4125,17 @@ void modeUpControl(void) {
                 LATCbits.LC1 = 0;
             }
             break;
+        case 0x80:
+            nowFL = 4;
+            if (queueUp[0] == 4) {
 
-        case 4:
-            if (PORTDbits.RD7) {
-
-
-
-
+                prevFL = 4;
                 LATCbits.LC1 = 1;
-                LATDbits.LD3 = 1;
-                nowFL = 4;
-
                 for (int i = 0; i < tasksUp; i++) {
                     queueUp[i] = queueUp[i + 1];
                 }
                 tasksUp--;
+                LATDbits.LD3 = 1;
                 dataPanelUp();
                 LATDbits.LD3 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
@@ -4151,12 +4144,15 @@ void modeUpControl(void) {
             }
             break;
     }
-
 }
 
-void rutine_up(void){
+int rutine_down(void){
+    return 0;
+}
 
-    modeUpControl();
+int rutine_up(void){
+
+    controlCalls();
     if (tasksUp == 0){
         if((tasksDown > 0) || callsD > 0){
             for(int i = 0; i < callsD; i++){
@@ -4166,64 +4162,89 @@ void rutine_up(void){
             sort(&queueDown[0], tasksDown + callsD);
             tasksDown = noRepeat(&queueDown[0], tasksDown + callsD);
 
-            callFL_down = queueDown[0];
+            call_init = queueDown[0];
             for (int re = 0; re < tasksDown; re++){
                 queueDown[re] = queueDown[re + 1];
             }
             tasksDown--;
 
 
-            modeDown();
+            from_up_change = 1;
+
+            return 1;
         }
         else{
 
-            callFL_up = 0;
+            call_init = 0;
             modeUp_F = 0;
+            tasksUp = 0;
+
+            return 1;
+        }
+    }
+    return 0;
+
+}
+
+void selectionMode(unsigned mode_s){
+    if (mode_s == 1){
+
+        LATCbits.LC1 = 0;
+
+        while (1) {
+            if(rutine_up()){
+                break;
+            }
 
         }
     }
+    else if(mode_s == 0){
 
+        LATCbits.LC0 = 0;
+
+        while (1) {
+            if(rutine_down()){
+                break;
+            }
+
+        }
+    }
 }
 
-void modeDown(void) {
-    modeUp_F = 0;
-    modeDown_F = 1;
-
-    callsD = 0;
-
-    tasksUp = 0;
-}
-
-void modeUp(void) {
-    modeDown_F = 0;
-    modeUp_F = 1;
+void modeControl(unsigned select_mode) {
+    if (select_mode == 1){
+        modeDown_F = 0;
+        modeUp_F = 1;
 
 
-    callsD = 0;
-    calls = 0;
+        callsD = 0;
+        callsU = 0;
 
 
 
-    tasksDown = 0;
+        tasksDown = 0;
+    }
+    else if (select_mode == 0){
+        modeUp_F = 0;
+        modeDown_F = 1;
 
-    unsigned int end_size = 0;
+        callsD = 0;
+        callsU = 0;
 
-    switch (callFL_up) {
+
+        tasksUp = 0;
+    }
+
+    switch (call_init) {
         case 1:
-            if (nowFL == 1) {
+            if (prevFL == 1) {
 
                 LATDbits.LD0 = 1;
                 dataPanelUp();
                 LATDbits.LD0 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
 
-
-                LATCbits.LC1 = 0;
-
-
-                while (1) {
-                    rutine_up();
-                }
+                selectionMode(select_mode);
 
             } else {
                 do {
@@ -4234,10 +4255,14 @@ void modeUp(void) {
                 LATDbits.LD0 = 1;
                 dataPanelUp();
                 LATDbits.LD0 = 0;
+                _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                selectionMode(select_mode);
             }
+            break;
 
         case 2:
-            if (nowFL == 2) {
+            if (prevFL == 2) {
 
                 LATDbits.LD1 = 1;
                 dataPanelUp();
@@ -4245,21 +4270,121 @@ void modeUp(void) {
                 _delay((unsigned long)((300)*(20000000/4000.0)));
 
 
-                LATCbits.LC1 = 0;
+                selectionMode(select_mode);
 
-                while (1) {
-                    rutine_up();
-                }
 
             } else {
-                if (nowFL < 2){
+                if (prevFL < 2){
                     do{
                         LATCbits.LC1 = 0;
+
                     }while(!PORTDbits.RD5);
-                    LATCbits.LC1 = 0;
+                    LATCbits.LC1 = 1;
+
+                    LATDbits.LD1 = 1;
+                    dataPanelUp();
+                    LATDbits.LD1 = 0;
+                    _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                    selectionMode(select_mode);
+
+                }else {
+                    do {
+                        LATCbits.LC0 = 0;
+                    }while(!PORTDbits.RD5);
+                    LATCbits.LC0 = 1;
+
+                    LATDbits.LD1 = 1;
+                    dataPanelUp();
+                    LATDbits.LD1 = 0;
+                    _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                    selectionMode(select_mode);
 
                 }
+
             }
+            break;
+        case 3:
+            if (prevFL == 3) {
+
+                LATDbits.LD2 = 1;
+                dataPanelUp();
+                LATDbits.LD2 = 0;
+                _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                selectionMode(select_mode);
+
+            } else {
+                if (prevFL < 3){
+                    do{
+                        LATCbits.LC1 = 0;
+                    }while(!PORTDbits.RD6);
+                    LATCbits.LC1 = 1;
+
+                    LATDbits.LD2 = 1;
+                    dataPanelUp();
+                    LATDbits.LD2 = 0;
+                    _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                    selectionMode(select_mode);
+
+                }else {
+                    do {
+                        LATCbits.LC0 = 0;
+                    }while(!PORTDbits.RD6);
+                    LATCbits.LC0 = 1;
+
+                    LATDbits.LD2 = 1;
+                    dataPanelUp();
+                    LATDbits.LD2 = 0;
+                    _delay((unsigned long)((300)*(20000000/4000.0)));
+                    selectionMode(select_mode);
+                }
+
+            }
+            break;
+
+        case 4:
+            if (prevFL == 4) {
+
+                LATDbits.LD3 = 1;
+                dataPanelUp();
+                LATDbits.LD3 = 0;
+                _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                selectionMode(select_mode);
+
+            } else {
+                if (prevFL < 4){
+                    do{
+                        LATCbits.LC1 = 0;
+                    }while(!PORTDbits.RD7);
+                    LATCbits.LC1 = 1;
+
+                    LATDbits.LD3 = 1;
+                    dataPanelUp();
+                    LATDbits.LD3 = 0;
+                    _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                    selectionMode(select_mode);
+
+                }else {
+                    do {
+                        LATCbits.LC0 = 0;
+                    }while(!PORTDbits.RD7);
+                    LATCbits.LC0 = 1;
+
+                    LATDbits.LD3 = 1;
+                    dataPanelUp();
+                    LATDbits.LD3 = 0;
+                    _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                    selectionMode(select_mode);
+                }
+
+            }
+            break;
     }
 }
 
@@ -4269,21 +4394,37 @@ void main(void) {
     bootAscensor();
 
     while (1) {
+
+        if (from_up_change){
+            from_up_change = 0;
+            modeControl(0);
+            continue;
+        }
+
         if (PORTBbits.RB0) {
-            callFL_up = 1;
-            modeUp();
+            nowFL = 1;
+            call_init = 1;
+            modeControl(1);
+            continue;
         }
         else if (PORTBbits.RB1) {
-            callFL_up = 2;
-            modeUp();
+            nowFL = 2;
+            call_init = 2;
+            modeControl(1);
+            continue;
         }
         else if (PORTBbits.RB4) {
-            callFL_up = 3;
-            modeUp();
+            nowFL = 3;
+            call_init = 3;
+            modeControl(1);
+            continue;
         }
 
         if(PORTBbits.RB2){
-
+            nowFL = 2;
+            call_init = 1;
+            modeControl(1);
+            continue;
         }
 
     }
@@ -4302,7 +4443,7 @@ void __attribute__((picinterrupt(("")))) ISR() {
                         queueUp[tasksUp] = 1;
                         tasksUp++;
                         sort(&queueUp[0], tasksUp);
-                        int si = noRepeat(UpTasks, tasksUp);
+                        int si = noRepeat(&queueUp[0], tasksUp);
                         tasksUp = si;
 
                     }
@@ -4326,7 +4467,6 @@ void __attribute__((picinterrupt(("")))) ISR() {
             if (modeUp_F){
                     callsInUp[callsD] = 2;
                     callsD++;
-                    down2_f = 1;
             }
             break;
 
@@ -4350,7 +4490,6 @@ void __attribute__((picinterrupt(("")))) ISR() {
             if (modeUp_F){
                     callsInUp[callsD] = 3;
                     callsD++;
-                    down3_f = 1;
             }
             break;
 
@@ -4358,7 +4497,6 @@ void __attribute__((picinterrupt(("")))) ISR() {
             if (modeUp_F){
                     callsInUp[callsD] = 4;
                     callsD++;
-                    down4_f = 1;
             }
             break;
 

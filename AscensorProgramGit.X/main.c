@@ -1,17 +1,19 @@
 /*
-Cambios pendientes [11 Nov]
+Cambios pendientes [14 Nov]
  ~* Manejo de llamadas a piso con interrupciones, utilizar structura switch para cada caso en PORTB.
  ~* Flags de referencia para cada modo, para los botones de panel y llamadas a piso.
  ~* Administar finalizacion modo subida llevando a cabo el inicio d emodo bajada, ordenando las llamadas a piso en la cola de llamadas de bajada. 
- 
- * Cambiar ordenamiento a al reves cuando cambies de modo. (line 479)
  ~* Terminar else de cada piso en modoUp
- * Prueba iniciar en funcion con bucle, saltar a otra con bucle y volver a la inicial. (prueba para comprender si es verdad la idea de que el codigo va y lo busca a la memoria)
  ~* Definir flag para "change_state" 1 si a cambiado de estado, 0 si no. (para manejo de variables tasksDown y tasksUp)
- 
- *Funcion now_level cambiar a modeUpControl, modeUpControl cambiar a 'select_task', ahora en modeUpControl (antes now_level) determinar que cada vez
+ ~*Funcion now_level cambiar a modeUpControl, modeUpControl cambiar a 'select_task', ahora en modeUpControl (antes now_level) determinar que cada vez
  que llegue a un sensor determinelo como nowlevel y condicione si en la lista queueUp[0] efectivamente es FLOOR1 para parar y ejecutar lo correspondiente
- al modo subida  
+ al modo subida
+ 
+ * Terminar funcion callsControl, integrar condicional sobre modo actual para determinar como administrar las llamadas.
+ * Terminar funcion rutine_ascensor (rutine_up) para integrar condicionales del modo.
+ * Cambiar ordenamiento a al reves cuando cambies de modo. (line 479)
+ * Prueba iniciar en funcion con bucle, saltar a otra con bucle y volver a la inicial. (prueba para comprender si es verdad la idea de que el codigo va y lo busca a la memoria)
+   
 */
 
 /*
@@ -119,13 +121,14 @@ Cambios pendientes [11 Nov]
 #define FLOOR2 2
 #define FLOOR3 3
 #define FLOOR4 4
+#define modeUpON 1
+#define modeDownON 0
 
-int tasksDown, tasksUp, calls, callsD, callFL_up, callFL_down, nowFL, prevFL, queueUp[100], queueDown[100], callsInUp[100];
- 
-int *UpTasks;         
-unsigned int modeUp_F, modeDown_F, from_up_change, from_down_change, sen1_f, sen2_f, sen3_f, sen4_f;    
 
-     
+
+int tasksDown, tasksUp, callsU, callsD, call_init, nowFL, prevFL, queueUp[100], queueDown[100], callsInUp[100];
+         
+unsigned int modeUp_F, modeDown_F, from_up_change, from_down_change;        
 
 /* Prototypes functions */
 /* ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~ ~~~*/
@@ -134,7 +137,7 @@ unsigned int modeUp_F, modeDown_F, from_up_change, from_down_change, sen1_f, sen
 
 void bootAscensor(void);            // Funcion para incializar ascensor.
 
-void rutine_up(void);               // FUncion rutina en motor de subida.
+int rutine_up(void);               // FUncion rutina en motor de subida.
 void dataPanelUp(void);             // Funcion para el manejo del panel en cada parada en modo subida.
 
 void modeUpControl(void);           // Funcion motor del modo subida.
@@ -160,17 +163,12 @@ void boot() {
     /* Reference of variables */
     tasksDown = 0;       // Number tasks for mode down.
     tasksUp = 0;         // Number tasks for mode up     
-    calls = 0;           // Calls floors in mode up.
+    callsU = 0;           // Calls floors in mode up.
     callsD = 0;          // Calls floors in mode Down.
-    callFL_up = 0;          // Piso de la ultima llamada.
+    call_init = 0;          // Piso de la ultima llamada.
     prevFL = 0;           // Last floor stoped.
     nowFL = 0;            // Piso actual.
-    
-    sen1_f = 0;           // Flag sensor piso 1.
-    sen2_f = 0;           // Flag sensor piso 2.
-    sen3_f = 0;           // Flag sensor piso 3.
-    sen4_f = 0;           // Flag sensor piso 4.
-    
+        
     /* Flags */
     modeUp_F = 0;       // Mode up flag
     modeDown_F = 0;     // Mode down flag
@@ -179,7 +177,6 @@ void boot() {
     from_down_change = 0;
     
 
-    UpTasks = &queueUp[0];            // Pointer to array of task in mode up.
 }
 
 void interruptsInit(void) {
@@ -337,37 +334,11 @@ void dataPanelUp(void) {
 
 }
 
-void now_level(){
+void controlCalls(){
     switch(PORTD){
-        case case_FL1_s:
-            sen1_f = 1;
-            sen1_f = 1;
-
-            nowFL = FLOOR1;         // Si el sensor del piso 1 esta activo, el piso actual es 1.
-            break;
-        case case_FL2_s:
-            sen2_f = 1;
-            nowFL = FLOOR2;
-            break;
-        case case_FL3_s:
-            sen3_f = 1;
-            nowFL = FLOOR3;
-            break;
-        case case_FL4_s:
-            sen4_f = 1;
-            nowFL = FLOOR4;
-            break;    
-    }
-}
-
-
-void modeUpControl(void) {
-
-    static int cont = 0;
-
-    switch (queueUp[cont]) {
-        case FLOOR1:
-            if (SenFL1) {               
+        case case_FL1_s:                // comporbar si no influye los datos de LATD en los otros pines del puerto D.
+            nowFL = FLOOR1;
+            if (queueUp[0] == FLOOR1) {               
                 // STOP in floor1
                 prevFL = FLOOR1;
                 DOWN_ASC = 1;
@@ -384,15 +355,16 @@ void modeUpControl(void) {
                 DOOR1 = 0;
                 __delay_ms(300);
 
-                DOWN_ASC = 0;
+                DOWN_ASC = 0; // reaundacion modo 
             }
+                       
             break;
-
-        case FLOOR2:
-            if (SenFL2) {
+        case case_FL2_s:
+            nowFL = FLOOR2;
+            if (queueUp[0] == FLOOR2) {
                 // STOP in floor2
                 prevFL = FLOOR2;
-                DOWN_ASC = 1;
+                DOWN_ASC = 1;   
                 
                 for (int i = 0; i < tasksUp; i++) {
                     queueUp[i] = queueUp[i + 1];
@@ -407,9 +379,9 @@ void modeUpControl(void) {
                 DOWN_ASC = 0;
             }
             break;
-
-        case FLOOR3:
-            if (SenFL3) {
+        case case_FL3_s:
+            nowFL = FLOOR3;
+            if (queueUp[0] == FLOOR3) {
                 
 
                 // STOP in floor3
@@ -429,9 +401,9 @@ void modeUpControl(void) {
                 DOWN_ASC = 0;
             }
             break;
-
-        case FLOOR4:
-            if (SenFL4) {                                
+        case case_FL4_s:
+            nowFL = FLOOR4;
+            if (queueUp[0] == FLOOR4) {                                
                 // STOP in floor4
                 prevFL = FLOOR4;
                 DOWN_ASC = 1;
@@ -446,14 +418,17 @@ void modeUpControl(void) {
                 
                 // DOWN_ASC = 0; Se supone que del cuarto no sube mas, motores quedan 1-1
             }
-            break;
+            break;    
     }
-
 }
 
-void rutine_up(void){
+int rutine_down(void){
+    return 0;
+}
+
+int rutine_up(void){
     
-    modeUpControl();              
+    controlCalls();              
     if (tasksUp == 0){        // when the calls is complete...
         if((tasksDown > 0) || callsD > 0){
             for(int i = 0; i < callsD; i++){
@@ -463,7 +438,7 @@ void rutine_up(void){
             sort(&queueDown[0], tasksDown + callsD);                    // Ordenar de mayor a menor.
             tasksDown = noRepeat(&queueDown[0], tasksDown + callsD);    // Nueva lista sin repeticiones de ruta en modo bajada.
                             
-            callFL_down = queueDown[0];
+            call_init = queueDown[0];
             for (int re = 0; re < tasksDown; re++){
                 queueDown[re] = queueDown[re + 1];
             }
@@ -476,8 +451,9 @@ void rutine_up(void){
         }
         else{
             /* No calls en down mode and up mode, init waiting mode */
-            callFL_up = 0;
+            call_init = 0;
             modeUp_F = 0;
+            tasksUp = 0;    // clear tasksUp.
             
             return 1;
         }
@@ -486,30 +462,56 @@ void rutine_up(void){
     
 }
 
-void modeDown(void) {
-    modeUp_F = 0;
-    modeDown_F = 1;     // Set flag mode down.
-    
-    callsD = 0;
-    
-    tasksUp = 0;
+void selectionMode(unsigned mode_s){
+    if (mode_s == modeUpON){       
+        /* Ejecutando motor de modo subida. */
+        DOWN_ASC = 0;
+        
+        while (1) {
+            if(rutine_up()){
+                break;
+            }
+                    
+        }
+    }
+    else if(mode_s == modeDownON){
+        /* Ejecutando motor de modo bajada. */
+        UP_ASC = 0;
+
+        while (1) {
+            if(rutine_down()){
+                break;
+            }
+                                       
+        }
+    }
 }
 
-void modeUp(void) {
-    modeDown_F = 0;
-    modeUp_F = 1;        // Set flag mode up.
+void modeControl(unsigned select_mode) {
+    if (select_mode == modeUpON){
+        modeDown_F = 0;
+        modeUp_F = 1;        // Set flag mode up.
     
-    /*Contadores llamadas a piso */
-    callsD = 0;
-    calls = 0;
+        /*Contadores llamadas a piso */
+        callsD = 0;
+        callsU = 0;
     
-    /*Numero de tareas en cola */
-    //tasksUp = 0;
-    tasksDown = 0;
+        /*Numero de tareas en cola */
+        //tasksUp = 0;
+        tasksDown = 0;
+    }
+    else if (select_mode == modeDownON){
+        modeUp_F = 0;
+        modeDown_F = 1;     // Set flag mode down.
     
-    unsigned int end_size = 0;
-
-    switch (callFL_up) {
+        callsD = 0;
+        callsU = 0;
+        
+        //tasksDown = 0;
+        tasksUp = 0;
+    }   
+    
+    switch (call_init) {
         case FLOOR1:
             if (prevFL == FLOOR1) {
                 
@@ -517,18 +519,9 @@ void modeUp(void) {
                 dataPanelUp();
                 DOOR1 = 0;
                 __delay_ms(300);
-
-                /* Modo subida inicando! */
-                DOWN_ASC = 0;
-                
-                /* Ejecutando motor de modo subida. */
-                while (1) {
-                    if(rutine_up()){
-                        break;
-                    }
-                    
-                }
-                           
+                                
+                selectionMode(select_mode);
+                          
             } else {
                 do {
                     UP_ASC = 0;
@@ -540,13 +533,7 @@ void modeUp(void) {
                 DOOR1 = 0;
                 __delay_ms(300);
                 
-                DOWN_ASC = 0; // UP = 1
-                while(1){
-                    if(rutine_up()){
-                        break;
-                    }
-                    
-                }
+                selectionMode(select_mode);
             }
             break;
             
@@ -558,15 +545,9 @@ void modeUp(void) {
                 DOOR2 = 0;
                 __delay_ms(300);
 
-                /* Modo subida inicando! */
-                DOWN_ASC = 0;
+                
+                selectionMode(select_mode);
 
-                while (1) {
-                    if(rutine_up()){
-                        break;
-                    }
-                                       
-                }
                            
             } else {
                 if (prevFL < FLOOR2){
@@ -581,15 +562,8 @@ void modeUp(void) {
                     DOOR2 = 0;
                     __delay_ms(300);
 
-                    /* Modo subida inicando! */
-                    DOWN_ASC = 0;
+                    selectionMode(select_mode);
 
-                    while (1) {
-                        if(rutine_up()){
-                            break;
-                        }
-                    }
-                    
                 }else {
                     do {
                         UP_ASC = 0; // DOWN = 1;
@@ -601,14 +575,8 @@ void modeUp(void) {
                     DOOR2 = 0;
                     __delay_ms(300);
 
-                    /* Modo subida inicando! */
-                    DOWN_ASC = 0;
+                    selectionMode(select_mode);
 
-                    while (1) {
-                        if(rutine_up()){
-                            break;
-                        }
-                    }
                 }
                 
             }
@@ -621,15 +589,7 @@ void modeUp(void) {
                 DOOR3 = 0;
                 __delay_ms(300);
 
-                /* Modo subida inicando! */
-                DOWN_ASC = 0;
-
-                while (1) {
-                    if(rutine_up()){
-                        break;
-                    }
-                                       
-                }
+                selectionMode(select_mode);
                            
             } else {
                 if (prevFL < FLOOR3){
@@ -643,15 +603,8 @@ void modeUp(void) {
                     DOOR3 = 0;
                     __delay_ms(300);
 
-                    /* Modo subida inicando! */
-                    DOWN_ASC = 0;
+                    selectionMode(select_mode);
 
-                    while (1) {
-                        if(rutine_up()){
-                            break;
-                        }
-                    }
-                    
                 }else {
                     do {
                         UP_ASC = 0; // DOWN = 1;
@@ -662,15 +615,7 @@ void modeUp(void) {
                     dataPanelUp();
                     DOOR3 = 0;
                     __delay_ms(300);
-
-                    /* Modo subida inicando! */
-                    DOWN_ASC = 0;
-
-                    while (1) {
-                        if(rutine_up()){
-                            break;
-                        }
-                    }
+                    selectionMode(select_mode);
                 }
                 
             }
@@ -684,15 +629,7 @@ void modeUp(void) {
                 DOOR4 = 0;
                 __delay_ms(300);
 
-                /* Modo subida inicando! */
-                DOWN_ASC = 0;
-
-                while (1) {
-                    if(rutine_up()){
-                        break;
-                    }
-                                       
-                }
+                selectionMode(select_mode);
                            
             } else {
                 if (prevFL < FLOOR4){
@@ -706,14 +643,7 @@ void modeUp(void) {
                     DOOR4 = 0;
                     __delay_ms(300);
 
-                    /* Modo subida inicando! */
-                    DOWN_ASC = 0;
-
-                    while (1) {
-                        if(rutine_up()){
-                            break;
-                        }
-                    }
+                    selectionMode(select_mode);
                     
                 }else {
                     do {
@@ -726,14 +656,7 @@ void modeUp(void) {
                     DOOR4 = 0;
                     __delay_ms(300);
 
-                    /* Modo subida inicando! */
-                    DOWN_ASC = 0;
-
-                    while (1) {
-                        if(rutine_up()){
-                            break;
-                        }
-                    }
+                    selectionMode(select_mode);
                 }
                 
             }
@@ -750,31 +673,34 @@ void main(void) {
         
         if (from_up_change){
             from_up_change = 0;
-            modeDown();
+            modeControl(modeDownON);
             continue;
         }
         
         if (btnUpFL1) {
             nowFL = FLOOR1;
-            callFL_up = FLOOR1;
-            modeUp();
+            call_init = FLOOR1;
+            modeControl(modeUpON);
             continue;
         }
         else if (btnUpFL2) {
             nowFL = FLOOR2;     // Deifnimos como 'piso de ahora' para no tener problemas con interrupcuiones y tomar todas las llamadas.
-            callFL_up = FLOOR2;
-            modeUp();
+            call_init = FLOOR2;
+            modeControl(modeUpON);
             continue;
         } 
-        else if (btnUpFL3) {
+         else if (btnUpFL3) {
             nowFL = FLOOR3;
-            callFL_up = FLOOR3;
-            modeUp();
+            call_init = FLOOR3;
+            modeControl(modeUpON);
             continue;
         }
         
         if(btnDownFL2){
-            
+            nowFL = FLOOR2;
+            call_init = FLOOR1;
+            modeControl(modeUpON);
+            continue;
         }
         
     }
@@ -793,7 +719,7 @@ void __interrupt() ISR() {
                         queueUp[tasksUp] = FLOOR1;
                         tasksUp++;
                         sort(&queueUp[0], tasksUp);
-                        int si = noRepeat(UpTasks, tasksUp);
+                        int si = noRepeat(&queueUp[0], tasksUp);
                         tasksUp = si;
                        
                     }
