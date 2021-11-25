@@ -7,7 +7,7 @@
 # 1 "/opt/microchip/mplabx/v5.50/packs/Microchip/PIC18Fxxxx_DFP/1.2.26/xc8/pic/include/language_support.h" 1 3
 # 2 "<built-in>" 2
 # 1 "main.c" 2
-# 31 "main.c"
+# 32 "main.c"
 #pragma config OSC = HS
 #pragma config OSCS = OFF
 
@@ -3848,11 +3848,363 @@ extern __attribute__((nonreentrant)) void _delaywdt(unsigned long);
 #pragma intrinsic(_delay3)
 extern __attribute__((nonreentrant)) void _delay3(unsigned char);
 # 33 "/opt/microchip/mplabx/v5.50/packs/Microchip/PIC18Fxxxx_DFP/1.2.26/xc8/pic/include/xc.h" 2 3
-# 77 "main.c" 2
-# 129 "main.c"
-int tasksDown, tasksUp, callsU, callsD, call_init, nowFL, prevFL, queueUp[100], queueDown[100], callsInUp[100];
+# 78 "main.c" 2
 
+
+# 1 "/opt/microchip/xc8/v2.32/pic/include/c99/stdio.h" 1 3
+# 24 "/opt/microchip/xc8/v2.32/pic/include/c99/stdio.h" 3
+# 1 "/opt/microchip/xc8/v2.32/pic/include/c99/bits/alltypes.h" 1 3
+
+
+
+
+
+typedef void * va_list[1];
+
+
+
+
+typedef void * __isoc_va_list[1];
+# 137 "/opt/microchip/xc8/v2.32/pic/include/c99/bits/alltypes.h" 3
+typedef long ssize_t;
+# 246 "/opt/microchip/xc8/v2.32/pic/include/c99/bits/alltypes.h" 3
+typedef long long off_t;
+# 399 "/opt/microchip/xc8/v2.32/pic/include/c99/bits/alltypes.h" 3
+typedef struct _IO_FILE FILE;
+# 25 "/opt/microchip/xc8/v2.32/pic/include/c99/stdio.h" 2 3
+# 52 "/opt/microchip/xc8/v2.32/pic/include/c99/stdio.h" 3
+typedef union _G_fpos64_t {
+ char __opaque[16];
+ double __align;
+} fpos_t;
+
+extern FILE *const stdin;
+extern FILE *const stdout;
+extern FILE *const stderr;
+
+
+
+
+
+FILE *fopen(const char *restrict, const char *restrict);
+FILE *freopen(const char *restrict, const char *restrict, FILE *restrict);
+int fclose(FILE *);
+
+int remove(const char *);
+int rename(const char *, const char *);
+
+int feof(FILE *);
+int ferror(FILE *);
+int fflush(FILE *);
+void clearerr(FILE *);
+
+int fseek(FILE *, long, int);
+long ftell(FILE *);
+void rewind(FILE *);
+
+int fgetpos(FILE *restrict, fpos_t *restrict);
+int fsetpos(FILE *, const fpos_t *);
+
+size_t fread(void *restrict, size_t, size_t, FILE *restrict);
+size_t fwrite(const void *restrict, size_t, size_t, FILE *restrict);
+
+int fgetc(FILE *);
+int getc(FILE *);
+int getchar(void);
+int ungetc(int, FILE *);
+
+int fputc(int, FILE *);
+int putc(int, FILE *);
+int putchar(int);
+
+char *fgets(char *restrict, int, FILE *restrict);
+
+char *gets(char *);
+
+
+int fputs(const char *restrict, FILE *restrict);
+int puts(const char *);
+
+#pragma printf_check(printf) const
+#pragma printf_check(vprintf) const
+#pragma printf_check(sprintf) const
+#pragma printf_check(snprintf) const
+#pragma printf_check(vsprintf) const
+#pragma printf_check(vsnprintf) const
+
+int printf(const char *restrict, ...);
+int fprintf(FILE *restrict, const char *restrict, ...);
+int sprintf(char *restrict, const char *restrict, ...);
+int snprintf(char *restrict, size_t, const char *restrict, ...);
+
+int vprintf(const char *restrict, __isoc_va_list);
+int vfprintf(FILE *restrict, const char *restrict, __isoc_va_list);
+int vsprintf(char *restrict, const char *restrict, __isoc_va_list);
+int vsnprintf(char *restrict, size_t, const char *restrict, __isoc_va_list);
+
+int scanf(const char *restrict, ...);
+int fscanf(FILE *restrict, const char *restrict, ...);
+int sscanf(const char *restrict, const char *restrict, ...);
+int vscanf(const char *restrict, __isoc_va_list);
+int vfscanf(FILE *restrict, const char *restrict, __isoc_va_list);
+int vsscanf(const char *restrict, const char *restrict, __isoc_va_list);
+
+void perror(const char *);
+
+int setvbuf(FILE *restrict, char *restrict, int, size_t);
+void setbuf(FILE *restrict, char *restrict);
+
+char *tmpnam(char *);
+FILE *tmpfile(void);
+
+
+
+
+FILE *fmemopen(void *restrict, size_t, const char *restrict);
+FILE *open_memstream(char **, size_t *);
+FILE *fdopen(int, const char *);
+FILE *popen(const char *, const char *);
+int pclose(FILE *);
+int fileno(FILE *);
+int fseeko(FILE *, off_t, int);
+off_t ftello(FILE *);
+int dprintf(int, const char *restrict, ...);
+int vdprintf(int, const char *restrict, __isoc_va_list);
+void flockfile(FILE *);
+int ftrylockfile(FILE *);
+void funlockfile(FILE *);
+int getc_unlocked(FILE *);
+int getchar_unlocked(void);
+int putc_unlocked(int, FILE *);
+int putchar_unlocked(int);
+ssize_t getdelim(char **restrict, size_t *restrict, int, FILE *restrict);
+ssize_t getline(char **restrict, size_t *restrict, FILE *restrict);
+int renameat(int, const char *, int, const char *);
+char *ctermid(char *);
+
+
+
+
+
+
+
+char *tempnam(const char *, const char *);
+# 81 "main.c" 2
+# 1 "./I2C_LCD.c" 1
+# 30 "./I2C_LCD.c"
+void I2C_Master_Init();
+void I2C_Master_Wait();
+void I2C_Master_Start();
+void I2C_Master_RepeatedStart();
+void I2C_Master_Stop();
+void I2C_ACK();
+void I2C_NACK();
+unsigned char I2C_Master_Write(unsigned char data);
+unsigned char I2C_Read_Byte(void);
+
+
+
+void LCD_Init(unsigned char I2C_Add);
+void IO_Expander_Write(unsigned char Data);
+void LCD_Write_4Bit(unsigned char Nibble);
+void LCD_CMD(unsigned char CMD);
+void LCD_Set_Cursor(unsigned char ROW, unsigned char COL);
+void LCD_Write_Char(char);
+void LCD_Write_String(char*);
+void Backlight();
+void noBacklight();
+void LCD_SR();
+void LCD_SL();
+void LCD_Clear();
+
+unsigned char RS, i2c_add, BackLight_State = 0x08;
+
+
+
+void I2C_Master_Init()
+{
+  SSPCON1 = 0x28;
+  SSPCON2 = 0x00;
+  SSPSTAT = 0x00;
+  SSPADD = ((20000000/4)/100000) - 1;
+  TRISC3 = 1;
+  TRISC4 = 1;
+}
+
+void I2C_Master_Wait()
+{
+  while ((SSPSTAT & 0x04) || (SSPCON2 & 0x1F));
+}
+
+void I2C_Master_Start()
+{
+  I2C_Master_Wait();
+  SEN = 1;
+}
+
+void I2C_Master_RepeatedStart()
+{
+  I2C_Master_Wait();
+  RSEN = 1;
+}
+
+void I2C_Master_Stop()
+{
+  I2C_Master_Wait();
+  PEN = 1;
+}
+
+void I2C_ACK(void)
+{
+  ACKDT = 0;
+  I2C_Master_Wait();
+  ACKEN = 1;
+}
+
+void I2C_NACK(void)
+{
+  ACKDT = 1;
+  I2C_Master_Wait();
+  ACKEN = 1;
+}
+
+unsigned char I2C_Master_Write(unsigned char data)
+{
+  I2C_Master_Wait();
+  SSPBUF = data;
+  while(!SSPIF);
+  SSPIF = 0;
+  return ACKSTAT;
+}
+
+unsigned char I2C_Read_Byte(void)
+{
+
+  I2C_Master_Wait();
+  RCEN = 1;
+  while(!SSPIF);
+  SSPIF = 0;
+  I2C_Master_Wait();
+  return SSPBUF;
+}
+
+
+
+
+
+void LCD_Init(unsigned char I2C_Add)
+{
+  i2c_add = I2C_Add;
+  IO_Expander_Write(0x00);
+  _delay((unsigned long)((30)*(20000000/4000.0)));
+  LCD_CMD(0x03);
+  _delay((unsigned long)((5)*(20000000/4000.0)));
+  LCD_CMD(0x03);
+  _delay((unsigned long)((5)*(20000000/4000.0)));
+  LCD_CMD(0x03);
+  _delay((unsigned long)((5)*(20000000/4000.0)));
+  LCD_CMD(0x02);
+  _delay((unsigned long)((5)*(20000000/4000.0)));
+  LCD_CMD(0x20 | (2 << 2));
+  _delay((unsigned long)((50)*(20000000/4000.0)));
+  LCD_CMD(0x0C);
+  _delay((unsigned long)((50)*(20000000/4000.0)));
+  LCD_CMD(0x01);
+  _delay((unsigned long)((50)*(20000000/4000.0)));
+  LCD_CMD(0x04 | 0x02);
+  _delay((unsigned long)((50)*(20000000/4000.0)));
+}
+
+void IO_Expander_Write(unsigned char Data)
+{
+  I2C_Master_Start();
+  I2C_Master_Write(i2c_add);
+  I2C_Master_Write(Data | BackLight_State);
+  I2C_Master_Stop();
+}
+
+void LCD_Write_4Bit(unsigned char Nibble)
+{
+
+  Nibble |= RS;
+  IO_Expander_Write(Nibble | 0x04);
+  IO_Expander_Write(Nibble & 0xFB);
+  _delay((unsigned long)((50)*(20000000/4000000.0)));
+}
+
+void LCD_CMD(unsigned char CMD)
+{
+  RS = 0;
+  LCD_Write_4Bit(CMD & 0xF0);
+  LCD_Write_4Bit((CMD << 4) & 0xF0);
+}
+
+void LCD_Write_Char(char Data)
+{
+  RS = 1;
+  LCD_Write_4Bit(Data & 0xF0);
+  LCD_Write_4Bit((Data << 4) & 0xF0);
+}
+
+void LCD_Write_String(char* Str)
+{
+  for(int i=0; Str[i]!='\0'; i++)
+    LCD_Write_Char(Str[i]);
+}
+
+void LCD_Set_Cursor(unsigned char ROW, unsigned char COL)
+{
+  switch(ROW)
+  {
+    case 2:
+      LCD_CMD(0xC0 + COL-1);
+      break;
+    case 3:
+      LCD_CMD(0x94 + COL-1);
+      break;
+    case 4:
+      LCD_CMD(0xD4 + COL-1);
+      break;
+
+    default:
+      LCD_CMD(0x80 + COL-1);
+  }
+}
+
+void Backlight()
+{
+  BackLight_State = 0x08;
+  IO_Expander_Write(0);
+}
+
+void noBacklight()
+{
+  BackLight_State = 0x00;
+  IO_Expander_Write(0);
+}
+
+void LCD_SL()
+{
+  LCD_CMD(0x18);
+  _delay((unsigned long)((40)*(20000000/4000000.0)));
+}
+
+void LCD_SR()
+{
+  LCD_CMD(0x1C);
+  _delay((unsigned long)((40)*(20000000/4000000.0)));
+}
+
+void LCD_Clear()
+{
+  LCD_CMD(0x01);
+  _delay((unsigned long)((40)*(20000000/4000000.0)));
+}
+# 82 "main.c" 2
+# 132 "main.c"
+int tasksDown, tasksUp, callsU, callsD, call_init, nowFL, prevFL, queueUp[100], queueDown[100], callsInUp[100], callsInDown[100];
 unsigned int modeUp_F, modeDown_F, from_up_change, from_down_change;
+char buffer[40], pLCD = 1;
 
 
 
@@ -3862,13 +4214,12 @@ unsigned int modeUp_F, modeDown_F, from_up_change, from_down_change;
 void bootAscensor(void);
 
 int rutine_up(void);
+int rutine_down(void);
 void dataPanelUp(void);
 
-void modeUpControl(void);
-void modeDownControl(void);
-
-void modeUp(void);
-void modeDown(void);
+void modeControl(unsigned select_mode);
+void selectionMode(unsigned mode_s);
+void measureBtn(void);
 
 void sort(int *p, int sizes);
 int noRepeat(int *po, int sixes);
@@ -3903,15 +4254,89 @@ void boot() {
 
 }
 
+void measureBtn(void){
+
+        if(PORTBbits.RB0){
+            if (modeUp_F){
+                    if (nowFL < 1){
+                        queueUp[tasksUp] = 1;
+                        tasksUp++;
+                        sort(&queueUp[0], tasksUp);
+                        tasksUp = noRepeat(&queueUp[0], tasksUp);
+
+
+                    }
+            }
+        }
+
+        if(PORTBbits.RB2){
+            if (modeUp_F){
+                    if (nowFL < 2){
+                        queueUp[tasksUp] = 2;
+                        tasksUp++;
+
+                        sort(&queueUp[0], tasksUp);
+                        tasksUp = noRepeat(&queueUp[0], tasksUp);
+                    }
+            }
+        }
+
+        if(PORTBbits.RB1){
+            if (modeUp_F){
+                    callsInUp[callsD] = 2;
+                    callsD++;
+            }
+        }
+
+
+        if(PORTBbits.RB5){
+            if (modeUp_F){
+                    if (nowFL < 3){
+                        queueUp[tasksUp] = 3;
+                        tasksUp++;
+                        sort(&queueUp[0], tasksUp);
+                        tasksUp = noRepeat(&queueUp[0], tasksUp);
+                    }
+            }
+        }
+
+        if(PORTBbits.RB4){
+            if (modeUp_F){
+                    callsInUp[callsD] = 3;
+                    callsD++;
+            }
+        }
+
+        if(PORTBbits.RB6){
+            if (modeUp_F){
+                    callsInUp[callsD] = 4;
+                    callsD++;
+            }
+        }
+
+        if(PORTBbits.RB7){
+        }
+
+}
+
+
 void interruptsInit(void) {
     RCONbits.IPEN = 0;
     INTCONbits.GIE = 1;
     INTCONbits.PEIE = 1;
+    INTCONbits.RBIE = 1;
 }
 
 void bootAscensor(void) {
     LATCbits.LC0 = 1;
     LATCbits.LC1 = 1;
+
+    LATDbits.LD0 = 0;
+    LATDbits.LD1 = 0;
+    LATDbits.LD2 = 0;
+    LATDbits.LD3 = 0;
+
+    _delay((unsigned long)((3000)*(20000000/4000.0)));
 
     if (PORTDbits.RD4 == 1) {
         prevFL = 1;
@@ -4000,168 +4425,593 @@ void sort(int *p, int sizes) {
     }
 }
 
+void sort_down(int *p, int sizes) {
+    int temp, nums = 0, pos = 0, sizesMod = sizes;
+    int result[100];
+
+
+
+
+    do {
+        temp = *(p + 0);
+
+        for (int h = 0; h < sizesMod; h++) {
+
+            if (*(p + h) == temp) {
+                temp = temp;
+                pos = h;
+            }
+            if (*(p + h) > temp) {
+
+
+                temp = *(p + h);
+                pos = h;
+            }
+
+            if (*(p + h) < temp) {
+
+
+                temp = temp;
+                pos = pos;
+            }
+        }
+
+
+        for (int k = pos; k < sizesMod; k++) {
+            *(p + k) = *(p + (k + 1));
+        }
+        result[nums] = temp;
+        sizesMod--;
+        nums++;
+    } while (nums <= sizes - 1);
+
+
+    for (int j = 0; j < sizes; j++) {
+        *(p + j) = result[j];
+    }
+}
+
 
 void dataPanelUp(void) {
+
+
+
+    _delay((unsigned long)((300)*(20000000/4000.0)));
     do {
         if (PORTAbits.RA0) {
 
-                if (nowFL < 1) {
-                    queueUp[tasksUp] = 1;
-                    tasksUp++;
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("BtnPn1 Press!");
+
+                if(modeUp_F){
+                    if (nowFL < 1) {
+                        queueUp[tasksUp] = 1;
+                        tasksUp++;
+                    } else {
+                        queueDown[tasksDown] = 1;
+                        tasksDown++;
+                    }
                 } else {
-                    queueDown[tasksDown] = 1;
-                    tasksDown++;
+                    if (nowFL > 1) {
+                        queueDown[tasksDown] = 1;
+                        tasksDown++;
+                    } else {
+                        queueUp[tasksUp] = 1;
+                        tasksUp++;
+                    }
                 }
 
         }
         if (PORTAbits.RA1) {
 
-                if (nowFL < 2) {
-                    queueUp[tasksUp] = 2;
-                    tasksUp++;
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("BtnPn2 Press!");
 
+                if(modeUp_F){
+                    if (nowFL < 2) {
+                        queueUp[tasksUp] = 2;
+                        tasksUp++;
+                    } else {
+                        queueDown[tasksDown] = 2;
+                        tasksDown++;
+                    }
                 } else {
-                    queueDown[tasksDown] = 2;
-                    tasksDown++;
+                    if (nowFL > 2) {
+                        queueDown[tasksDown] = 2;
+                        tasksDown++;
+                    } else {
+                        queueUp[tasksUp] = 2;
+                        tasksUp++;
+                    }
                 }
 
         }
         if (PORTAbits.RA2) {
 
-                if (nowFL < 3) {
-                    queueUp[tasksUp] = 3;
-                    tasksUp++;
-                } else {
-                    queueDown[tasksDown] = 3;
-                    tasksDown++;
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("BtnPn3 Press!");
 
+                if(modeUp_F){
+                    if (nowFL < 3) {
+                        queueUp[tasksUp] = 3;
+                        tasksUp++;
+                    } else {
+                        queueDown[tasksDown] = 3;
+                        tasksDown++;
+                    }
+                } else {
+                    if (nowFL > 3) {
+                        queueDown[tasksDown] = 3;
+                        tasksDown++;
+                    } else {
+                        queueUp[tasksUp] = 3;
+                        tasksUp++;
+                    }
                 }
 
         }
         if (PORTAbits.RA3) {
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("BtnPn4 Press!");
 
-                if (nowFL < 4) {
-                    queueUp[tasksUp] = 4;
-                    tasksUp++;
+                if(modeUp_F){
+                    if (nowFL < 4) {
+                        queueUp[tasksUp] = 4;
+                        tasksUp++;
+                    } else {
+                        queueDown[tasksDown] = 4;
+                        tasksDown++;
+                    }
                 } else {
-                    queueDown[tasksDown] = 4;
-                    tasksDown++;
-
+                    if (nowFL > 4) {
+                        queueDown[tasksDown] = 4;
+                        tasksDown++;
+                    } else {
+                        queueUp[tasksUp] = 4;
+                        tasksUp++;
+                    }
                 }
         }
     } while (!PORTAbits.RA4);
 
 
-    sort(&queueUp[0], tasksUp);
-    int new_size = noRepeat(&queueUp[0], tasksUp);
-    tasksUp = new_size;
+    if(modeUp_F){
+        sort(&queueUp[0], tasksUp);
+        tasksUp = noRepeat(&queueUp[0], tasksUp);
+    } else {
+        sort_down(&queueDown[0], tasksDown);
+        tasksDown = noRepeat(&queueDown[0], tasksDown);
+    }
 
 }
 
 void controlCalls(){
-    switch(PORTD){
-        case 0x10:
+
+        if(PORTDbits.RD4){
             nowFL = 1;
             if (queueUp[0] == 1) {
 
                 prevFL = 1;
                 LATCbits.LC1 = 1;
 
-
-                for (int i = 0; i < tasksUp; i++) {
-                    queueUp[i] = queueUp[i + 1];
+                for (int i1 = 0; i1 < tasksUp; i1++) {
+                    queueUp[i1] = queueUp[i1 + 1];
                 }
                 tasksUp--;
+
+
+                LCD_Clear();
+                LCD_Set_Cursor(1,1);
+                LCD_Write_String("Up: Stop FL1");
+
+
+                for (int i_1 = 0; i_1 < tasksUp; i_1++){
+
+                    sprintf(buffer, "%d", queueUp[i_1]);
+                    LCD_Set_Cursor(2, pLCD);
+                    LCD_Write_String(buffer);
+                    pLCD++;
+                }
+                pLCD = 1;
+                _delay((unsigned long)((3000)*(20000000/4000.0)));
+
                 LATDbits.LD0 = 1;
-
                 dataPanelUp();
-
                 LATDbits.LD0 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
 
-                LATCbits.LC1 = 0;
+                if(tasksUp != 0){
+                    LATCbits.LC1 = 0;
+                } else {
+                    LCD_Clear();
+                    LCD_Set_Cursor(1,1);
+                    LCD_Write_String("Mode Up OFF");
+                    return;
+                }
+
+
+            }
+            if (queueDown[0] == 1) {
+
+                prevFL = 1;
+                LATCbits.LC0 = 1;
+
+                for (int i1 = 0; i1 < tasksDown; i1++) {
+                    queueDown[i1] = queueDown[i1 + 1];
+                }
+                tasksDown--;
+
+
+                LCD_Clear();
+                LCD_Set_Cursor(1,1);
+                LCD_Write_String("Down: Stop FL1");
+
+
+                for (int i_2 = 0; i_2 < tasksDown; i_2++){
+
+                    sprintf(buffer, "%d", queueDown[i_2]);
+                    LCD_Set_Cursor(2, pLCD);
+                    LCD_Write_String(buffer);
+                    pLCD++;
+                }
+                pLCD = 1;
+                _delay((unsigned long)((3000)*(20000000/4000.0)));
+
+
+                LATDbits.LD0 = 1;
+                dataPanelUp();
+                LATDbits.LD0 = 0;
+                _delay((unsigned long)((300)*(20000000/4000.0)));
+
+
             }
 
-            break;
-        case 0x20:
+        }
+        if(PORTDbits.RD5){
             nowFL = 2;
             if (queueUp[0] == 2) {
 
                 prevFL = 2;
+
                 LATCbits.LC1 = 1;
 
-                for (int i = 0; i < tasksUp; i++) {
-                    queueUp[i] = queueUp[i + 1];
+                for (int i1 = 0; i1 < tasksUp; i1++) {
+                    queueUp[i1] = queueUp[i1 + 1];
                 }
                 tasksUp--;
+
+
+                LCD_Clear();
+                LCD_Set_Cursor(1,1);
+                LCD_Write_String("Up: Stop FL2");
+
+
+                for (int i_3 = 0; i_3 < tasksUp; i_3++){
+
+                    sprintf(buffer, "%d", queueUp[i_3]);
+                    LCD_Set_Cursor(2, pLCD);
+                    LCD_Write_String(buffer);
+                    pLCD++;
+                }
+                pLCD = 1;
+                _delay((unsigned long)((3000)*(20000000/4000.0)));
 
                 LATDbits.LD1 = 1;
                 dataPanelUp();
                 LATDbits.LD1 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
 
-                LATCbits.LC1 = 0;
+
+                if(tasksUp != 0){
+                    LATCbits.LC1 = 0;
+                } else {
+                    LCD_Clear();
+                    LCD_Set_Cursor(1,1);
+                    LCD_Write_String("Mode Up OFF");
+                    return;
+                }
+
             }
-            break;
-        case 0x40:
+            if (queueDown[0] == 2) {
+
+                prevFL = 2;
+                LATCbits.LC0 = 1;
+
+                for (int i1 = 0; i1 < tasksDown; i1++) {
+                    queueDown[i1] = queueDown[i1 + 1];
+                }
+                tasksDown--;
+
+
+                LCD_Clear();
+                LCD_Set_Cursor(1,1);
+                LCD_Write_String("Down: Stop FL2");
+
+
+                for (int i_4 = 0; i_4 < tasksDown; i_4++){
+
+                    sprintf(buffer, "%d", queueDown[i_4]);
+                    LCD_Set_Cursor(2, pLCD);
+                    LCD_Write_String(buffer);
+                    pLCD++;
+                }
+                pLCD = 1;
+                _delay((unsigned long)((3000)*(20000000/4000.0)));
+
+                LATDbits.LD1 = 1;
+                dataPanelUp();
+                LATDbits.LD1 = 0;
+                _delay((unsigned long)((300)*(20000000/4000.0)));
+
+
+
+                if(tasksDown != 0){
+                    LATCbits.LC0 = 0;
+                } else {
+                    LCD_Clear();
+                    LCD_Set_Cursor(1,1);
+                    LCD_Write_String("Mode Down OFF");
+                    return;
+                }
+
+            }
+
+
+        }
+        if(PORTDbits.RD6){
             nowFL = 3;
             if (queueUp[0] == 3) {
 
-
-
                 prevFL = 3;
+
                 LATCbits.LC1 = 1;
 
-                for (int i = 0; i < tasksUp; i++) {
-                    queueUp[i] = queueUp[i + 1];
+                for (int i1 = 0; i1 < tasksUp; i1++) {
+                    queueUp[i1] = queueUp[i1 + 1];
                 }
                 tasksUp--;
+
+
+                LCD_Clear();
+                LCD_Set_Cursor(1,1);
+                LCD_Write_String("Up: Stop FL3");
+
+
+                for (int i_5 = 0; i_5 < tasksUp; i_5++){
+
+                    sprintf(buffer, "%d", queueUp[i_5]);
+                    LCD_Set_Cursor(2, pLCD);
+                    LCD_Write_String(buffer);
+                    pLCD++;
+                }
+                pLCD = 1;
+
+                _delay((unsigned long)((3000)*(20000000/4000.0)));
 
                 LATDbits.LD2 = 1;
                 dataPanelUp();
                 LATDbits.LD2 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
 
-                LATCbits.LC1 = 0;
+
+                if(tasksUp != 0){
+                    LATCbits.LC1 = 0;
+                } else {
+                    LCD_Clear();
+                    LCD_Set_Cursor(1,1);
+                    LCD_Write_String("Mode Up OFF");
+                    return;
+                }
+
             }
-            break;
-        case 0x80:
+            if (queueDown[0] == 3) {
+
+                prevFL = 3;
+                LATCbits.LC0 = 1;
+
+                for (int i1 = 0; i1 < tasksDown; i1++) {
+                    queueDown[i1] = queueDown[i1 + 1];
+                }
+                tasksDown--;
+
+
+                LCD_Clear();
+                LCD_Set_Cursor(1,1);
+                LCD_Write_String("Down: Stop FL3");
+
+                for (int i_6 = 0; i_6 < tasksDown; i_6++){
+
+                    sprintf(buffer, "%d", queueDown[i_6]);
+                    LCD_Set_Cursor(2, pLCD);
+                    LCD_Write_String(buffer);
+                    pLCD++;
+                }
+                pLCD = 1;
+                _delay((unsigned long)((3000)*(20000000/4000.0)));
+
+                LATDbits.LD2 = 1;
+                dataPanelUp();
+                LATDbits.LD2 = 0;
+                _delay((unsigned long)((300)*(20000000/4000.0)));
+
+
+                if(tasksDown != 0){
+                    LATCbits.LC0 = 0;
+                } else {
+                    LCD_Clear();
+                    LCD_Set_Cursor(1,1);
+                    LCD_Write_String("Mode Up OFF");
+                    return;
+                }
+
+            }
+        }
+        if(PORTDbits.RD7){
             nowFL = 4;
             if (queueUp[0] == 4) {
 
                 prevFL = 4;
+
                 LATCbits.LC1 = 1;
-                for (int i = 0; i < tasksUp; i++) {
-                    queueUp[i] = queueUp[i + 1];
+
+                for (int i1 = 0; i1 < tasksUp; i1++) {
+                    queueUp[i1] = queueUp[i1 + 1];
                 }
                 tasksUp--;
+
+
+                LCD_Clear();
+                LCD_Set_Cursor(1,1);
+                LCD_Write_String("Up: Stop FL4");
+
+                for (int i_7 = 0; i_7 < tasksUp; i_7++){
+
+                    sprintf(buffer, "%d", queueUp[i_7]);
+                    LCD_Set_Cursor(2, pLCD);
+                    LCD_Write_String(buffer);
+                    pLCD++;
+                }
+                pLCD = 1;
+                _delay((unsigned long)((3000)*(20000000/4000.0)));
+
                 LATDbits.LD3 = 1;
                 dataPanelUp();
                 LATDbits.LD3 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
 
 
+
+
             }
-            break;
-    }
+            if (queueDown[0] == 4) {
+
+                prevFL = 4;
+                LATCbits.LC0 = 1;
+
+                for (int i1 = 0; i1 < tasksDown; i1++) {
+                    queueDown[i1] = queueDown[i1 + 1];
+                }
+                tasksDown--;
+
+
+                LCD_Clear();
+                LCD_Set_Cursor(1,1);
+                LCD_Write_String("Down: Stop FL4");
+
+                for (int i_8 = 0; i_8 < tasksDown; i_8++){
+
+                    sprintf(buffer, "%d", queueDown[i_8]);
+                    LCD_Set_Cursor(2, pLCD);
+                    LCD_Write_String(buffer);
+                    pLCD++;
+                }
+                pLCD = 1;
+                _delay((unsigned long)((3000)*(20000000/4000.0)));
+
+                LATDbits.LD3 = 1;
+                dataPanelUp();
+                LATDbits.LD3 = 0;
+                _delay((unsigned long)((300)*(20000000/4000.0)));
+
+
+                if(tasksDown != 0){
+                    LATCbits.LC0 = 0;
+                } else {
+                    LCD_Clear();
+                    LCD_Set_Cursor(1,1);
+                    LCD_Write_String("Mode Up OFF");
+                    return;
+                }
+
+            }
+        }
 }
 
 int rutine_down(void){
+
+
+
+    controlCalls();
+
+
+    if (tasksDown == 0){
+        LCD_Clear();
+        LCD_Set_Cursor(1,1);
+        LCD_Write_String("End Down Mode");
+        _delay((unsigned long)((2000)*(20000000/4000.0)));
+        if((tasksUp > 0) || callsU > 0){
+            LCD_Set_Cursor(2,1);
+            LCD_Write_String("callsInDown");
+            LCD_Clear();
+
+
+            for(int i = 0; i < callsU; i++){
+                queueUp[tasksUp + i] = callsInDown[i];
+            }
+
+            sort(&queueUp[0], tasksUp + callsU);
+            tasksUp = noRepeat(&queueDown[0], tasksUp + callsU);
+
+            for (int i = 0; i < tasksUp; i++){
+
+                    sprintf(buffer, "%d", queueUp[i]);
+                    LCD_Set_Cursor(2, pLCD);
+                    LCD_Write_String(buffer);
+                    pLCD++;
+            }
+            pLCD = 1;
+            _delay((unsigned long)((2000)*(20000000/4000.0)));
+            call_init = queueUp[0];
+            for (int re = 0; re < tasksUp; re++){
+                queueDown[re] = queueDown[re + 1];
+            }
+            tasksUp--;
+
+
+            from_down_change = 1;
+            from_up_change = 0;
+            return 1;
+        }
+        else{
+
+            LCD_Set_Cursor(2,1);
+            LCD_Write_String("No callsInDown");
+
+            call_init = 0;
+            modeDown_F = 0;
+            tasksDown = 0;
+
+            return 1;
+        }
+    }
     return 0;
 }
 
 int rutine_up(void){
 
+
     controlCalls();
     if (tasksUp == 0){
+        LCD_Clear();
+        LCD_Set_Cursor(1,1);
+        LCD_Write_String("End Up Mode");
+        _delay((unsigned long)((2000)*(20000000/4000.0)));
         if((tasksDown > 0) || callsD > 0){
+            LCD_Set_Cursor(2,1);
+            LCD_Write_String("callsInUp");
+            LCD_Clear();
+
             for(int i = 0; i < callsD; i++){
                 queueDown[tasksDown + i] = callsInUp[i];
             }
 
-            sort(&queueDown[0], tasksDown + callsD);
+            sort_down(&queueDown[0], tasksDown + callsD);
             tasksDown = noRepeat(&queueDown[0], tasksDown + callsD);
-
+# 955 "main.c"
             call_init = queueDown[0];
             for (int re = 0; re < tasksDown; re++){
                 queueDown[re] = queueDown[re + 1];
@@ -4170,7 +5020,7 @@ int rutine_up(void){
 
 
             from_up_change = 1;
-
+            from_down_change = 0;
             return 1;
         }
         else{
@@ -4191,23 +5041,55 @@ void selectionMode(unsigned mode_s){
 
         LATCbits.LC1 = 0;
 
+        LCD_Clear();
+        LCD_Set_Cursor(1,1);
+        LCD_Write_String("[Mode Up]");
+        for (int i = 0; i < tasksUp; i++){
+
+            sprintf(buffer, "%d", queueUp[i]);
+            LCD_Set_Cursor(2, pLCD);
+            LCD_Write_String(buffer);
+            pLCD++;
+        }
+        pLCD = 1;
+
         while (1) {
             if(rutine_up()){
+                LATCbits.LC0 = 1;
+                LATCbits.LC1 = 1;
                 break;
             }
 
         }
+        LATCbits.LC0 = 1;
+        LATCbits.LC1 = 1;
     }
     else if(mode_s == 0){
 
         LATCbits.LC0 = 0;
 
+        LCD_Clear();
+        LCD_Set_Cursor(1,1);
+        LCD_Write_String("[Mode Down]");
+        for (int i = 0; i < tasksDown; i++){
+
+            sprintf(buffer, "%d", queueDown[i]);
+            LCD_Set_Cursor(2, pLCD);
+            LCD_Write_String(buffer);
+            pLCD++;
+        }
+        pLCD = 1;
+
         while (1) {
             if(rutine_down()){
+                LATCbits.LC0 = 1;
+                LATCbits.LC1 = 1;
                 break;
             }
 
         }
+        LATCbits.LC0 = 1;
+        LATCbits.LC1 = 1;
     }
 }
 
@@ -4223,6 +5105,10 @@ void modeControl(unsigned select_mode) {
 
 
         tasksDown = 0;
+
+        LCD_Clear();
+        LCD_Set_Cursor(1,1);
+        LCD_Write_String("[Mode Up]");
     }
     else if (select_mode == 0){
         modeUp_F = 0;
@@ -4233,16 +5119,31 @@ void modeControl(unsigned select_mode) {
 
 
         tasksUp = 0;
+
+        LCD_Clear();
+        LCD_Set_Cursor(1,1);
+        LCD_Write_String("[Mode Down]");
     }
 
     switch (call_init) {
         case 1:
-            if (prevFL == 1) {
+            LCD_Set_Cursor(2,1);
+            LCD_Write_String("Move-to floor1");
 
+
+            if (prevFL == 1) {
+                nowFL = 1;
                 LATDbits.LD0 = 1;
                 dataPanelUp();
                 LATDbits.LD0 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                if (tasksUp == 0 && modeUp_F == 1){
+                    break;
+                }
+                if (tasksDown == 0 && modeDown_F == 1){
+                    break;
+                }
 
                 selectionMode(select_mode);
 
@@ -4250,6 +5151,7 @@ void modeControl(unsigned select_mode) {
                 do {
                     LATCbits.LC0 = 0;
                 } while (!PORTDbits.RD4);
+                nowFL = 1;
                 LATCbits.LC0 = 1;
 
                 LATDbits.LD0 = 1;
@@ -4257,20 +5159,38 @@ void modeControl(unsigned select_mode) {
                 LATDbits.LD0 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
 
+                if (tasksUp == 0 && modeUp_F == 1){
+                    break;
+                }
+                if (tasksDown == 0 && modeDown_F == 1){
+                    break;
+                }
+
                 selectionMode(select_mode);
             }
             break;
 
         case 2:
-            if (prevFL == 2) {
 
+            LCD_Set_Cursor(2,1);
+            LCD_Write_String("Move-to floor2");
+            if (prevFL == 2) {
+                nowFL = 2;
                 LATDbits.LD1 = 1;
                 dataPanelUp();
                 LATDbits.LD1 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
 
+                if (tasksUp == 0 && modeUp_F == 1){
+                    break;
+                }
+                if (tasksDown == 0 && modeDown_F == 1){
+                    break;
+                }
+
 
                 selectionMode(select_mode);
+
 
 
             } else {
@@ -4280,11 +5200,18 @@ void modeControl(unsigned select_mode) {
 
                     }while(!PORTDbits.RD5);
                     LATCbits.LC1 = 1;
-
+                    nowFL = 2;
                     LATDbits.LD1 = 1;
                     dataPanelUp();
                     LATDbits.LD1 = 0;
                     _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                    if (tasksUp == 0 && modeUp_F == 1){
+                        break;
+                    }
+                    if (tasksDown == 0 && modeDown_F == 1){
+                        break;
+                    }
 
                     selectionMode(select_mode);
 
@@ -4293,11 +5220,18 @@ void modeControl(unsigned select_mode) {
                         LATCbits.LC0 = 0;
                     }while(!PORTDbits.RD5);
                     LATCbits.LC0 = 1;
-
+                    nowFL = 2;
                     LATDbits.LD1 = 1;
                     dataPanelUp();
                     LATDbits.LD1 = 0;
                     _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                    if (tasksUp == 0 && modeUp_F == 1){
+                        break;
+                    }
+                    if (tasksDown == 0 && modeDown_F == 1){
+                        break;
+                    }
 
                     selectionMode(select_mode);
 
@@ -4306,6 +5240,9 @@ void modeControl(unsigned select_mode) {
             }
             break;
         case 3:
+            nowFL = 3;
+            LCD_Set_Cursor(2,1);
+            LCD_Write_String("Move-to floor3");
             if (prevFL == 3) {
 
                 LATDbits.LD2 = 1;
@@ -4313,6 +5250,12 @@ void modeControl(unsigned select_mode) {
                 LATDbits.LD2 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
 
+                if (tasksUp == 0 && modeUp_F == 1){
+                    break;
+                }
+                if (tasksDown == 0 && modeDown_F == 1){
+                    break;
+                }
                 selectionMode(select_mode);
 
             } else {
@@ -4321,11 +5264,18 @@ void modeControl(unsigned select_mode) {
                         LATCbits.LC1 = 0;
                     }while(!PORTDbits.RD6);
                     LATCbits.LC1 = 1;
-
+                    nowFL = 3;
                     LATDbits.LD2 = 1;
                     dataPanelUp();
                     LATDbits.LD2 = 0;
                     _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                    if (tasksUp == 0 && modeUp_F == 1){
+                        break;
+                    }
+                    if (tasksDown == 0 && modeDown_F == 1){
+                        break;
+                    }
 
                     selectionMode(select_mode);
 
@@ -4334,11 +5284,19 @@ void modeControl(unsigned select_mode) {
                         LATCbits.LC0 = 0;
                     }while(!PORTDbits.RD6);
                     LATCbits.LC0 = 1;
-
+                    nowFL = 3;
                     LATDbits.LD2 = 1;
                     dataPanelUp();
                     LATDbits.LD2 = 0;
                     _delay((unsigned long)((300)*(20000000/4000.0)));
+
+                    if (tasksUp == 0 && modeUp_F == 1){
+                        break;
+                    }
+                    if (tasksDown == 0 && modeDown_F == 1){
+                        break;
+                    }
+
                     selectionMode(select_mode);
                 }
 
@@ -4346,12 +5304,25 @@ void modeControl(unsigned select_mode) {
             break;
 
         case 4:
-            if (prevFL == 4) {
+            LCD_Set_Cursor(2,1);
+            LCD_Write_String("Move-to floor4");
 
+            if(modeUp_F){
+                select_mode = 0;
+            }
+
+            if (prevFL == 4) {
+                nowFL = 4;
                 LATDbits.LD3 = 1;
                 dataPanelUp();
                 LATDbits.LD3 = 0;
                 _delay((unsigned long)((300)*(20000000/4000.0)));
+                if (tasksUp == 0 && modeUp_F == 1){
+                    break;
+                }
+                if (tasksDown == 0 && modeDown_F == 1){
+                    break;
+                }
 
                 selectionMode(select_mode);
 
@@ -4361,11 +5332,17 @@ void modeControl(unsigned select_mode) {
                         LATCbits.LC1 = 0;
                     }while(!PORTDbits.RD7);
                     LATCbits.LC1 = 1;
-
+                    nowFL = 4;
                     LATDbits.LD3 = 1;
                     dataPanelUp();
                     LATDbits.LD3 = 0;
                     _delay((unsigned long)((300)*(20000000/4000.0)));
+                    if (tasksUp == 0 && modeUp_F == 1){
+                        break;
+                    }
+                    if (tasksDown == 0 && modeDown_F == 1){
+                        break;
+                    }
 
                     selectionMode(select_mode);
 
@@ -4374,12 +5351,17 @@ void modeControl(unsigned select_mode) {
                         LATCbits.LC0 = 0;
                     }while(!PORTDbits.RD7);
                     LATCbits.LC0 = 1;
-
+                    nowFL = 4;
                     LATDbits.LD3 = 1;
                     dataPanelUp();
                     LATDbits.LD3 = 0;
                     _delay((unsigned long)((300)*(20000000/4000.0)));
-
+                    if (tasksUp == 0 && modeUp_F == 1){
+                        break;
+                    }
+                    if (tasksDown == 0 && modeDown_F == 1){
+                        break;
+                    }
                     selectionMode(select_mode);
                 }
 
@@ -4390,117 +5372,143 @@ void modeControl(unsigned select_mode) {
 
 void main(void) {
     boot();
-    interruptsInit();
+
     bootAscensor();
+
+    I2C_Master_Init();
+    LCD_Init(0x4E);
+
+    LCD_Set_Cursor(1, 1);
+    LCD_Write_String("Inciando!");
+    LCD_Set_Cursor(2, 1);
+    LCD_Write_String("Modo Espera");
+
 
     while (1) {
 
         if (from_up_change){
+            LATCbits.LC0 = 1;
+            LATCbits.LC1 = 1;
+
             from_up_change = 0;
             modeControl(0);
             continue;
         }
+        if(from_down_change){
+            LATCbits.LC0 = 1;
+            LATCbits.LC1 = 1;
+
+            from_down_change = 0;
+            modeControl(1);
+        }
+
 
         if (PORTBbits.RB0) {
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("btn up 1");
             nowFL = 1;
             call_init = 1;
             modeControl(1);
+
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("Mode up END");
+
+            LATCbits.LC0 = 1;
+            LATCbits.LC1 = 1;
+            _delay((unsigned long)((1000)*(20000000/4000.0)));
             continue;
         }
-        else if (PORTBbits.RB1) {
+        if (PORTBbits.RB2) {
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("btn up 2");
+
             nowFL = 2;
             call_init = 2;
             modeControl(1);
+
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("Mode up END");
+            LATCbits.LC0 = 1;
+            LATCbits.LC1 = 1;
+            _delay((unsigned long)((1000)*(20000000/4000.0)));
             continue;
         }
-        else if (PORTBbits.RB4) {
-            nowFL = 3;
+        if (PORTBbits.RB5) {
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("btn up 3");
+
+
             call_init = 3;
             modeControl(1);
+
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("Mode up END");
+            LATCbits.LC0 = 1;
+            LATCbits.LC1 = 1;
+            _delay((unsigned long)((1000)*(20000000/4000.0)));
             continue;
         }
 
-        if(PORTBbits.RB2){
-            nowFL = 2;
-            call_init = 1;
-            modeControl(1);
+
+        if(PORTBbits.RB1){
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("btn down 2");
+
+
+            call_init = 2;
+            modeControl(0);
+
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("Mode down END");
+            LATCbits.LC0 = 1;
+            LATCbits.LC1 = 1;
+            _delay((unsigned long)((1000)*(20000000/4000.0)));
+            continue;
+        }
+        if (PORTBbits.RB4) {
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("btn down 3");
+
+            nowFL = 3;
+            call_init = 3;
+            modeControl(0);
+
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("Mode down END");
+            LATCbits.LC0 = 1;
+            LATCbits.LC1 = 1;
+            _delay((unsigned long)((1000)*(20000000/4000.0)));
+            continue;
+        }
+        if (PORTBbits.RB6) {
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("btn down 4");
+
+            nowFL = 4;
+            call_init = 4;
+            modeControl(0);
+
+            LCD_Clear();
+            LCD_Set_Cursor(1,1);
+            LCD_Write_String("Mode down END");
+            LATCbits.LC0 = 1;
+            LATCbits.LC1 = 1;
+            _delay((unsigned long)((1000)*(20000000/4000.0)));
             continue;
         }
 
     }
 
     return;
-}
-
-
-
-void __attribute__((picinterrupt(("")))) ISR() {
-
-    switch (PORTB) {
-        case 0x01:
-            if (modeUp_F){
-                    if (nowFL < 1){
-                        queueUp[tasksUp] = 1;
-                        tasksUp++;
-                        sort(&queueUp[0], tasksUp);
-                        int si = noRepeat(&queueUp[0], tasksUp);
-                        tasksUp = si;
-
-                    }
-            }
-            break;
-
-        case 0x02:
-            if (modeUp_F){
-                    if (nowFL < 2){
-                        queueUp[tasksUp] = 2;
-                        tasksUp++;
-
-                        sort(&queueUp[0], tasksUp);
-                        int si = noRepeat(&queueUp[0], tasksUp);
-                        tasksUp = si;
-                    }
-            }
-            break;
-
-        case 0x04:
-            if (modeUp_F){
-                    callsInUp[callsD] = 2;
-                    callsD++;
-            }
-            break;
-
-        case 0x08:
-
-            break;
-
-        case 0x10:
-            if (modeUp_F){
-                    if (nowFL < 3){
-                        queueUp[tasksUp] = 3;
-                        tasksUp++;
-                        sort(&queueUp[0], tasksUp);
-                        int si = noRepeat(&queueUp[0], tasksUp);
-                        tasksUp = si;
-                    }
-            }
-            break;
-
-        case 0x20:
-            if (modeUp_F){
-                    callsInUp[callsD] = 3;
-                    callsD++;
-            }
-            break;
-
-        case 0x40:
-            if (modeUp_F){
-                    callsInUp[callsD] = 4;
-                    callsD++;
-            }
-            break;
-
-        case 0x80:
-            break;
-    }
 }
